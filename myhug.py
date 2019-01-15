@@ -1,5 +1,9 @@
 """First hug API (local and HTTP access)"""
 import hug
+import os
+import requests
+
+
 
 
 @hug.get(examples='name=Timothy&age=26')
@@ -16,8 +20,23 @@ def echo(blah: hug.types.text,hug_timer=3):
 @hug.post(examples='hello')
 def hello(data):
     """Test for webex teams"""
-    print(data)
+    print(str(data))
     roomId = 'Y2lzY29zcGFyazovL3VzL1JPT00vNjg2YTkwODAtZmZjMy0xMWU4LWI0NTgtMzc2MWQzZGY5MjNj'
     msg = 'hello world'
+    webex_post_example()
     return {"roomId": roomId,"text": msg}
     
+def webex_post_example():
+    os.environ['BOT_TOKEN']
+    url = "https://api.ciscospark.com/v1/messages"
+
+    payload = "{\r\n  \"roomId\" : \"Y2lzY29zcGFyazovL3VzL1JPT00vNjg2YTkwODAtZmZjMy0xMWU4LWI0NTgtMzc2MWQzZGY5MjNj\",\r\n  \"text\" : \"hi from hug\"\r\n}"
+    headers = {
+        'Authorization': os.environ['BOT_TOKEN'],
+        'Content-Type': "application/json"
+        }
+
+    response = requests.request("POST", url, data=payload, headers=headers)
+
+    print(response.text)    
+    return
