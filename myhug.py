@@ -23,7 +23,7 @@ def hello(data):
     print(str(data))
     roomId = 'Y2lzY29zcGFyazovL3VzL1JPT00vNjg2YTkwODAtZmZjMy0xMWU4LWI0NTgtMzc2MWQzZGY5MjNj'
     msg = 'hello world'
-    webex_post_example()
+    #webex_post_example()
     return {"roomId": roomId,"text": msg}
     
 def webex_post_example():
