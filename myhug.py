@@ -30,30 +30,37 @@ def echo(blah: hug.types.text,hug_timer=3):
 @hug.post('/hello', examples='hello')
 def hello(body):
     """Test for webex teams"""
-    print("GOT {}: {}".format(type(body), repr(body)))
+    #print("GOT {}: {}".format(type(body), repr(body)))
     room_id = body["data"]["roomId"]
     identity = body["data"]["personEmail"]
     text = body["data"]["id"]
+    print("see POST from {}".format(identity))
     if identity != bot_email:
         command = get_msg_sent_to_bot(text).lower()
         command = (command.replace(bot_name, '')).strip()
         print("stripped command: {}".format(command))
 
-
-
         if command in ("spiff","news","promo","services","partner","capital"):
             response = bot_post_to_room(room_id, command)
-            print("botpost response: {}".format(response))
         else:
+            #markdown help:
+            #newline    -->|  \n      <--doublespaces required
+            #paragraph  -->|\n\n
+            #bold       -->|**Bolded Text**
+            #italics    -->|*Italic Text*
+            #hyperlink  -->|[link text](https://www.google.com)
+            #numberlist -->|1. hello  \n2. bye  \n3. end
+            #codeblock  -->|```hello  \nis this code  \nx.hello()  \nblah  \n```\n\n**not code**
+            #mention    -->|<@personEmail:email@example.com|Joe> Whatup?
             msg = ("**Commands available**: < spiff >,< news >,< promo >,< services >,< partner >,< capital >  \n"
                    "*example*: {bot} news  \n"
                    "*example*: {bot} spiff  \n"
                    "\n\n**Filter results**: < en >,< collab >,< dc >,< sec >,< app >  \n"
-                   "*example*: {bot} news en \n"
-                   "*example*: {bot} spiff collab \n"
+                   "*example*: {bot} news en  \n"
+                   "*example*: {bot} spiff collab  \n"
                    ).format(bot = bot_name)
             response = bot_post_to_room(room_id, msg)
-            print("botpost response: {}".format(response))            
+                       
     #webex_post_example()
     #return {"roomId": roomId,"text": msg}
     #return
@@ -62,8 +69,9 @@ def bot_post_to_room(room_id, message):
 
     payload = {"roomId": room_id,"markdown": message}
     response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
-    
-    return response
+    response = json.loads(response.text)
+    print("botpost response: {}".format(response)) 
+    return response["text"]
 
 def get_msg_sent_to_bot(msg_id):
     urltext = url + "/" + msg_id
