@@ -70,7 +70,7 @@ def bot_post_to_room(room_id, message):
     payload = {"roomId": room_id,"markdown": message}
     response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
     response = json.loads(response.text)
-    print("botpost response: {}".format(response)) 
+    #print("botpost response: {}".format(response)) 
     return response["text"]
 
 def get_msg_sent_to_bot(msg_id):
