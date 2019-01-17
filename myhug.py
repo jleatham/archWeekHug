@@ -23,12 +23,12 @@ def hello(data):
     print(str(data))
     roomId = 'Y2lzY29zcGFyazovL3VzL1JPT00vNjg2YTkwODAtZmZjMy0xMWU4LWI0NTgtMzc2MWQzZGY5MjNj'
     msg = 'hello world'
-    webex_post_example()
-    #return {"roomId": roomId,"text": msg}
+    #webex_post_example()
+    return {"roomId": roomId,"text": msg}
     return
     
 def webex_post_example():
-    os.environ['BOT_TOKEN']
+    #os.environ['BOT_TOKEN']
     url = "https://api.ciscospark.com/v1/messages"
 
     payload = "{\r\n  \"roomId\" : \"Y2lzY29zcGFyazovL3VzL1JPT00vNjg2YTkwODAtZmZjMy0xMWU4LWI0NTgtMzc2MWQzZGY5MjNj\",\r\n  \"text\" : \"hi from hug\"\r\n}"
