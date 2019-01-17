@@ -2,9 +2,19 @@
 import hug
 import os
 import requests
+import json
 
 
+bot_email = "hugtest@webex.bot"
+bot_name = "hugtest"
 
+# Webex variables
+url = "https://api.ciscospark.com/v1/messages"
+headers = {
+    'Authorization': os.environ['BOT_TOKEN'],
+    'Content-Type': "application/json",
+    'cache-control': "no-cache"
+}
 
 @hug.get(examples='name=Timothy&age=26')
 @hug.local()
@@ -21,24 +31,31 @@ def echo(blah: hug.types.text,hug_timer=3):
 def hello(body):
     """Test for webex teams"""
     print("GOT {}: {}".format(type(body), repr(body)))
-    roomId = 'Y2lzY29zcGFyazovL3VzL1JPT00vNjg2YTkwODAtZmZjMy0xMWU4LWI0NTgtMzc2MWQzZGY5MjNj'
-    msg = 'hello world'
+    room_id = body["data"]["roomId"]
+    identity = body["data"]["personEmail"]
+    text = body["data"]["id"]
+    if identity != bot_email:
+        command = get_msg_sent_to_bot(text).lower()
+        command = (command.replace(bot_name, '')).strip()
+        print("stripped command: {}".format(command))
+
+        response = webex_post_example(room_id, command)
     #webex_post_example()
     #return {"roomId": roomId,"text": msg}
     #return
     
-def webex_post_example():
-    #os.environ['BOT_TOKEN']
-    url = "https://api.ciscospark.com/v1/messages"
+def webex_post_example(room_id, message):
 
-    payload = "{\r\n  \"roomId\" : \"Y2lzY29zcGFyazovL3VzL1JPT00vNjg2YTkwODAtZmZjMy0xMWU4LWI0NTgtMzc2MWQzZGY5MjNj\",\r\n  \"text\" : \"hi from hug\"\r\n}"
-    headers = {
-        'Authorization': os.environ['BOT_TOKEN'],
-        'Content-Type': "application/json"
-        }
+    payload = {"roomId": room_id,"markdown": message}
+    response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
+    
+    return response
 
-    response = requests.request("POST", url, data=payload, headers=headers)
+def get_msg_sent_to_bot(msg_id):
+    urltext = url + "/" + msg_id
+    payload = ""
 
-    print(response.text)  
-    #comment  
-    return
+    response = requests.request("GET", urltext, data=payload, headers=headers)
+    response = json.loads(response.text)
+    print ("Message to bot : {}\n\n".format(response["text"]))
+    return response["text"]
