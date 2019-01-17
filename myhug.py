@@ -45,9 +45,12 @@ def hello(body):
             response = bot_post_to_room(room_id, command)
             print("botpost response: {}".format(response))
         else:
-            msg = ("Commands available: < spiff >,< news >,< promo >,< services >,< partner >,< capital >  \n"
-                   "example: {bot} news  \n"
-                   "example: {bot} spiff  \n"
+            msg = ("**Commands available**: < spiff >,< news >,< promo >,< services >,< partner >,< capital >  \n"
+                   "*example*: {bot} news  \n"
+                   "*example*: {bot} spiff  \n"
+                   "\n\n**Filter results**: < en >,< collab >,< dc >,< sec >,< app >  \n"
+                   "*example*: {bot} news en \n"
+                   "*example*: {bot} spiff collab \n"
                    ).format(bot = bot_name)
             response = bot_post_to_room(room_id, msg)
             print("botpost response: {}".format(response))            
