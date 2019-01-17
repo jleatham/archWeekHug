@@ -39,12 +39,23 @@ def hello(body):
         command = (command.replace(bot_name, '')).strip()
         print("stripped command: {}".format(command))
 
-        response = webex_post_example(room_id, command)
+
+
+        if command in ("spiff","news","promo","services","partner","capital"):
+            response = bot_post_to_room(room_id, command)
+            print("botpost response: {}".format(response))
+        else:
+            msg = ("Commands available: <spiff>,<news>,<promo>,<services>,<partner>,<capital>\n"
+                   "example: {} news\n".format(bot_name)
+                   "example: {} spiff\n".format(bot_name)
+                   )
+            response = bot_post_to_room(room_id, msg)
+            print("botpost response: {}".format(response))            
     #webex_post_example()
     #return {"roomId": roomId,"text": msg}
     #return
     
-def webex_post_example(room_id, message):
+def bot_post_to_room(room_id, message):
 
     payload = {"roomId": room_id,"markdown": message}
     response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
@@ -57,5 +68,5 @@ def get_msg_sent_to_bot(msg_id):
 
     response = requests.request("GET", urltext, data=payload, headers=headers)
     response = json.loads(response.text)
-    print ("Message to bot : {}\n\n".format(response["text"]))
+    #print ("Message to bot : {}".format(response["text"]))
     return response["text"]
