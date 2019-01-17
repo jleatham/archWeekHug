@@ -17,15 +17,15 @@ def echo(blah: hug.types.text,hug_timer=3):
     """Echos back whatever given"""
     return {'message': '{}'.format(blah), 'took': float(hug_timer)}
 
-@hug.post(examples='hello')
-def hello(data):
+@hug.post('/hello', examples='hello')
+def hello(body):
     """Test for webex teams"""
-    print(str(data))
+    print("GOT {}: {}".format(type(body), repr(body)))
     roomId = 'Y2lzY29zcGFyazovL3VzL1JPT00vNjg2YTkwODAtZmZjMy0xMWU4LWI0NTgtMzc2MWQzZGY5MjNj'
     msg = 'hello world'
     #webex_post_example()
-    return {"roomId": roomId,"text": msg}
-    return
+    #return {"roomId": roomId,"text": msg}
+    #return
     
 def webex_post_example():
     #os.environ['BOT_TOKEN']
