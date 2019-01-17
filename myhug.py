@@ -46,9 +46,9 @@ def hello(body):
             print("botpost response: {}".format(response))
         else:
             msg = ("Commands available: <spiff>,<news>,<promo>,<services>,<partner>,<capital>\n"
-                   "example: {} news\n".format(bot_name)
-                   "example: {} spiff\n".format(bot_name)
-                   )
+                   "example: {bot} news\n"
+                   "example: {bot} spiff\n"
+                   ).format(bot = bot_name)
             response = bot_post_to_room(room_id, msg)
             print("botpost response: {}".format(response))            
     #webex_post_example()
