@@ -3,11 +3,12 @@ import hug
 import os
 import requests
 import json
+import smartsheet
 
 
 bot_email = "hugtest@webex.bot"
 bot_name = "hugtest"
-
+event_smartsheet_id = "489009441990532"
 # Webex variables
 url = "https://api.ciscospark.com/v1/messages"
 headers = {
@@ -15,6 +16,7 @@ headers = {
     'Content-Type': "application/json",
     'cache-control': "no-cache"
 }
+
 
 @hug.get(examples='name=Timothy&age=26')
 @hug.local()
@@ -41,6 +43,10 @@ def hello(body):
         print("stripped command: {}".format(command))
 
         if command in ("spiff","news","promo","services","partner","capital"):
+            #def to get all data and filter by type
+            #if en, collab, etc:
+                #def to filter by type
+            #return data and bot_post
             response = bot_post_to_room(room_id, command)
         else:
             #markdown help:
@@ -81,3 +87,34 @@ def get_msg_sent_to_bot(msg_id):
     response = json.loads(response.text)
     #print ("Message to bot : {}".format(response["text"]))
     return response["text"]
+
+def ss_get_client(access_token):
+    ss_client = smartsheet.Smartsheet(os.environ['SMARTSHEET_TOKEN'])
+    # Make sure we don't miss any errors
+    ss_client.errors_as_exceptions(True)
+    return ss_client
+
+#goal would be to say <botname> <state code>
+    #city is too narrow a field, area too broad
+
+#def get all areas and associated states
+    #pull area column of event sheet, and do set list (or just type manually as not that many)
+    #create a dict with [] keys:
+        #temp_dict = {"south":[],"west":[]}
+    #column_ids=[<area id>,<city id>]
+    #sheet = smartsheet.Sheets.get_sheet(sheet_id, column_ids=column_ids)
+    #for row in sheet.row:
+        #temp_dict[row.cells[0]].append(row.cells[1])
+    #area_dict = {}
+    #for key, value in temp_dict:
+        #area_dict[key] = set(value)
+    #return area_dict
+        #should look like: {"south":["TX","AR","NC",etc],"west":["CA","OR",etc]}
+
+#def botprint all areas and associated states(area_dict)
+    #would be the default message when no state is detected
+    #msg = ""
+    #msg += "any static info such as a reminder to add events to smartsheet link"
+    #for key, value in area_dict:
+        #msg += "**{}**  \n".format(key)  #bolded area name
+        #msg += "```  \n {}  \n```".format(value.join(' '))  #join all states in list and separate with space

@@ -1,0 +1,250 @@
+import os
+import sys
+import requests
+import json
+import smartsheet
+from secrets import SPARK_ACCESS_TOKEN, SMARTSHEET_TOKEN, HUGTEST_ROOM_ID
+
+
+'''
+               Global ID#  4434467927418756
+     Event ID (from AFMC)  4914842529228676
+                   SSID #  4170514429175684
+               Event Name  4193604173358980
+                     Area  8697203800729476
+               Event Date  2481664568911748
+             Event Status  2964285748995972
+           Fiscal Quarter  4409256964319108
+                     City  7289828917176196
+                    State  6985264196282244
+             Architecture  2786229289805700
+                 Vertical  992286747191172
+               Event Type  5859364289439620
+           Event Strategy  5229449194039172
+                 Audience  1355764662069124
+        Cisco-Partner Led  5296414336018308
+                  Segment  6589440010282884
+            Select Region  1336420129367940
+         Territory Region  792814708647812
+            Local Contact  3607564475754372
+               Event Lead  184410042591108
+                 Comments  3547617704601476
+        Registrant Report  4275694881531780
+                 Password  8779294508902276
+       Informational Link  1473495319242628
+        Number Registered   78597282129796
+          Number Attended  4582196909500292
+             Attendance %  4172800626845572
+             Hand Raisers  2232257990682500
+            Modified Date  6422314242860932
+              Modified By  1918714615490436
+             Created Date  7548214149703556
+               Created By  3044614522333060
+'''
+
+bot_email = "hugtest@webex.bot"
+bot_name = "hugtest"
+arch_week_smartsheet_id = "2089577960761220"
+event_smartsheet_id = "489009441990532"
+event_name_column = "4193604173358980"
+event_area_column = "8697203800729476"
+event_state_column = "6985264196282244"
+column_filter_list = [event_area_column,event_state_column]
+
+url = "https://api.ciscospark.com/v1/messages"
+headers = {
+    'Authorization': SPARK_ACCESS_TOKEN,
+    'Content-Type': "application/json",
+    'cache-control': "no-cache"
+}
+
+def main():
+    ss_client = ss_get_client(SMARTSHEET_TOKEN)
+    area_dict = get_all_areas_and_associated_states(ss_client,event_smartsheet_id,column_filter_list)
+    #get_all_areas_and_associated_states(ss_client,arch_week_smartsheet_id)
+    test_help_msg(area_dict)
+    #test_print_state_events(ss_client,event_smartsheet_id,'TX')
+    #test_print_state_events_v2(ss_client,event_smartsheet_id,'TX')
+
+def ss_get_client(SMARTSHEET_TOKEN):
+    #ss_client = smartsheet.Smartsheet(os.environ['SMARTSHEET_TOKEN'])
+    ss_client = smartsheet.Smartsheet(SMARTSHEET_TOKEN)
+    # Make sure we don't miss any errors
+    ss_client.errors_as_exceptions(True)
+    return ss_client
+
+def get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = []):
+    #shouldn't include column filter option if hard coding the cell values later on
+    #filter f0r 2 column reduces from 22 to 2.6 in size
+    #pull area column of event sheet, and do set list (or just type manually as not that many)
+    #create a dict with [] keys:
+    #temp_dict = {"south":[],"west":[]}
+    #column_ids=[<area id>,<city id>]
+    temp_area_list = []
+    #tempsheet = ss_client.Sheets.get_sheet(sheet_id, column_ids=[])
+    sheet = ss_client.Sheets.get_sheet(sheet_id, column_ids=column_filter_list)
+    #print("Full sheet size: {}       Filtered sheet size: {}".format(str(get_size(tempsheet)),str(get_size(sheet))))
+    for row in sheet.rows:
+
+        #print("{:<60} {:<10} {:<5}".format(str(row.cells[0].value),str(row.cells[1].value),str(row.cells[2].value)))
+        temp_area_list.append(str(row.cells[0].value))
+        #print(row.cells[2].value)
+        #temp_dict[row.cells[0]].append(row.cells[1])
+    area_list = list(set(temp_area_list))
+    #print(area_list)
+    temp_dict = {}
+    for area in area_list:
+        #temp_dict looks like:  {"south":[],"west":[]}
+        temp_dict[area] = []
+    for row in sheet.rows:
+        temp_dict[str(row.cells[0].value)].append(str(row.cells[1].value))
+    #print(str(temp_dict))
+    area_dict = {}
+    for key, value in temp_dict.items():
+        area_dict[key] = list(set(value))
+    #print(str(area_dict))
+    return area_dict
+        #should look like: {"south":["TX","AR","NC",etc],"west":["CA","OR",etc]}
+
+def test_help_msg(area_dict):
+
+    msg_list = []
+    msg_list.append("**Test Help Print**")
+    for area, states in area_dict.items():
+        msg_list.append("\n\n**{}**  \n{}".format(area, ' '.join(states)))
+    msg = ''.join(msg_list)
+    #print(msg)
+    response = bot_post_to_room(HUGTEST_ROOM_ID, msg)    
+
+
+#Code block version, how to get hyperlinks?
+def test_print_state_events(ss_client,sheet_id,state):
+    #is there a way to filter before grabbing?  not sure
+    #i see a include=['filters], but don't see a way to define that
+    #until then, grab all and filter myself
+    sheet = ss_client.Sheets.get_sheet(sheet_id)
+    
+    msg_list = []
+    msg_list.append("**Test State Print**  \n```")
+    msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format('Event Name','Area','State','City','Event Date'))
+    msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<10} {:*<10}".format('*','*','*','*','*'))
+    msg_list.append("  \n{:<60}".format('[link text](https://www.google.com)'))
+    for row in sheet.rows:
+        row_dict = {}
+        for cell in row.cells:
+        #for c in range(0, len(sheet.columns)):
+            #print row.cells[c].value        
+            column_title = map_cell_data_to_columnId(sheet.columns, cell)
+            #if has hyperlink
+            #elif has value
+            if cell.value:
+                row_dict[column_title] = str(cell.value)
+            #else blank out with ''
+            else:
+                row_dict[column_title] = ''
+            #
+        if row_dict['State'] == state:
+            #msg_list.append("  \n")
+            #for column, value in row_dict.items():
+            #    if column in ('State','Event Name','Area'):
+            #        msg_list.append("{} = {}    ".format(column, value))
+            msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+            #msg_list.append("  \n")
+    msg_list.append("  \n```")
+    msg = ''.join(msg_list)
+    print(msg)
+    print(get_size(msg))
+    response = bot_post_to_room(HUGTEST_ROOM_ID, msg)  
+
+
+#https://stackoverflow.com/questions/6046263/how-to-indent-a-few-lines-in-markdown-markup
+#using <option + spacebar> to create a space that markdown does not ignore
+#makes the request too large
+def test_print_state_events_v2(ss_client,sheet_id,state):
+    #is there a way to filter before grabbing?  not sure
+    #i see a include=['filters], but don't see a way to define that
+    #until then, grab all and filter myself
+    sheet = ss_client.Sheets.get_sheet(sheet_id)
+    
+    msg_list = []
+    msg_list.append("**Test State Print**  \n")
+    msg_list.append("  \n{: <.10} | {: <20} | {: <8} | {: <20} | {: <20}".format('Event Name','Area','State','City','Event Date'))
+    #msg_list.append("  \n{:<60}|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {:<10} |                          | {:<4} | {:<10} | {:<10}".format('Event Name','Area','State','City','Event Date'))
+    msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<10} {:*<10}".format('*','*','*','*','*'))
+    #msg_list.append("  \n{:<60}".format('[link text](https://www.google.com)'))
+    for row in sheet.rows:
+        row_dict = {}
+        for cell in row.cells:
+        #for c in range(0, len(sheet.columns)):
+            #print row.cells[c].value        
+            column_title = map_cell_data_to_columnId(sheet.columns, cell)
+            #if has hyperlink
+            #elif has value
+            if cell.value:
+                row_dict[column_title] = str(cell.value)
+            #else blank out with ''
+            else:
+                row_dict[column_title] = ''
+            #
+        if row_dict['State'] == state:
+            #msg_list.append("  \n")
+            #for column, value in row_dict.items():
+            #    if column in ('State','Event Name','Area'):
+            #        msg_list.append("{} = {}    ".format(column, value))
+            msg_list.append("  \n{:_<40.40} {: <10.10} {: <10.10} {: <10.10} {: <10.10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+            #msg_list.append("  \n")
+    msg_list.append("  \n")
+    msg = ''.join(msg_list)
+    print(msg)
+    print(get_size(msg))
+    response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+
+
+def map_cell_data_to_columnId(columns,cell):
+    #cell object has listing for column_id , but data shows {columnId: n}, weird
+    for column in columns:
+        #print("{:>25}  {:>15}".format(str(column.title),str(column.id)))
+        #print(str(cell))
+        #print(type(columnId))
+        #print(str(columnId))
+        #print(columnId)
+        #print(cell['columnId'])
+        #print(cell.column_id)
+
+        if column.id == cell.column_id:
+            #print("found")
+            return column.title
+        
+
+
+def bot_post_to_room(room_id, message):
+
+    payload = {"roomId": room_id,"markdown": message}
+    response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
+    response = json.loads(response.text)
+    print("botpost response: {}".format(response)) 
+    return response["text"]
+
+
+def get_size(obj, seen=None):
+    """Recursively finds size of objects"""
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([get_size(v, seen) for v in obj.values()])
+        size += sum([get_size(k, seen) for k in obj.keys()])
+    elif hasattr(obj, '__dict__'):
+        size += get_size(obj.__dict__, seen)
+    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([get_size(i, seen) for i in obj])
+    return size 
+
+if __name__ == "__main__":
+    main()
