@@ -62,9 +62,9 @@ def main():
     ss_client = ss_get_client(SMARTSHEET_TOKEN)
     area_dict = get_all_areas_and_associated_states(ss_client,event_smartsheet_id,column_filter_list)
     #get_all_areas_and_associated_states(ss_client,arch_week_smartsheet_id)
-    test_help_msg(area_dict)
+    #test_help_msg(area_dict)
     #test_print_state_events(ss_client,event_smartsheet_id,'TX')
-    #test_print_state_events_v2(ss_client,event_smartsheet_id,'TX')
+    test_print_state_events_v2(ss_client,event_smartsheet_id,'TX')
 
 def ss_get_client(SMARTSHEET_TOKEN):
     #ss_client = smartsheet.Smartsheet(os.environ['SMARTSHEET_TOKEN'])
@@ -191,7 +191,15 @@ def test_print_state_events_v2(ss_client,sheet_id,state):
             #for column, value in row_dict.items():
             #    if column in ('State','Event Name','Area'):
             #        msg_list.append("{} = {}    ".format(column, value))
-            msg_list.append("  \n{:_<40.40} {: <10.10} {: <10.10} {: <10.10} {: <10.10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+
+            #formats event date into month/day/year
+            #will use this format to do a date comparison and skip old events
+            event_date = row_dict['Event Date'].split("-")
+            event_date = "{}/{}/{}".format(event_date[1],event_date[2],event_date[0])
+            msg_list.append("  \n{:_<40.40} {: <10.10} {: <10.10} {: <10.10} {: <10.10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],event_date))
+
+            #msg_list.append("  \n{:_<40.40} {: <10.10} {: <10.10} {: <10.10} {: <10.10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+            
             #msg_list.append("  \n")
     msg_list.append("  \n")
     msg = ''.join(msg_list)
