@@ -72,6 +72,7 @@ def main():
     msg = test_generate_html_table(ss_client,event_smartsheet_id,'TX')
     email_filename = generate_email(msg)
     test_send_email(HUGTEST_ROOM_ID,email_filename)
+    
 
 def ss_get_client(SMARTSHEET_TOKEN):
     #ss_client = smartsheet.Smartsheet(os.environ['SMARTSHEET_TOKEN'])
@@ -199,7 +200,9 @@ def test_print_state_events_v2(ss_client,sheet_id,state):
             #for column, value in row_dict.items():
             #    if column in ('State','Event Name','Area'):
             #        msg_list.append("{} = {}    ".format(column, value))
+            
             msg_list.append("  \n{:_<40.40} {: <10.10} {: <10.10} {: <10.10} {: <10.10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+            
             #msg_list.append("  \n")
     msg_list.append("  \n")
     msg = ''.join(msg_list)
