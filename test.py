@@ -66,7 +66,7 @@ def main():
     ss_client = ss_get_client(SMARTSHEET_TOKEN)
     area_dict = get_all_areas_and_associated_states(ss_client,event_smartsheet_id,column_filter_list)
     #get_all_areas_and_associated_states(ss_client,arch_week_smartsheet_id)
-    test_help_msg(area_dict)
+    #test_help_msg(area_dict)
     #test_print_state_events(ss_client,event_smartsheet_id,'TX')
     #test_print_state_events_v2(ss_client,event_smartsheet_id,'TX')
     msg = test_generate_html_table(ss_client,event_smartsheet_id,'TX')
