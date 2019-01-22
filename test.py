@@ -1,7 +1,11 @@
 import os
 import sys
 import requests
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 import json
+from email import generator
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import smartsheet
 from secrets import SPARK_ACCESS_TOKEN, SMARTSHEET_TOKEN, HUGTEST_ROOM_ID
 
@@ -65,6 +69,9 @@ def main():
     test_help_msg(area_dict)
     #test_print_state_events(ss_client,event_smartsheet_id,'TX')
     #test_print_state_events_v2(ss_client,event_smartsheet_id,'TX')
+    msg = test_generate_html_table(ss_client,event_smartsheet_id,'TX')
+    email_filename = generate_email(msg)
+    test_send_email(HUGTEST_ROOM_ID,email_filename)
 
 def ss_get_client(SMARTSHEET_TOKEN):
     #ss_client = smartsheet.Smartsheet(os.environ['SMARTSHEET_TOKEN'])
@@ -154,7 +161,8 @@ def test_print_state_events(ss_client,sheet_id,state):
     msg = ''.join(msg_list)
     print(msg)
     print(get_size(msg))
-    response = bot_post_to_room(HUGTEST_ROOM_ID, msg)  
+    response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+    #return msg
 
 
 #https://stackoverflow.com/questions/6046263/how-to-indent-a-few-lines-in-markdown-markup
@@ -199,6 +207,62 @@ def test_print_state_events_v2(ss_client,sheet_id,state):
     print(get_size(msg))
     response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
 
+
+def test_generate_html_table(ss_client,sheet_id,state):
+    #is there a way to filter before grabbing?  not sure
+    #i see a include=['filters], but don't see a way to define that
+    #until then, grab all and filter myself
+    css = {
+        'trStyle' : 'style="background-color:transparent;"',
+        'spanStyle' :  'style= "color:black;font-family:ciscosans,sans-serif;font-size:12pt;"',
+        'tableStyle' : 'style="margin:5px;width:70%;border:2pt solid;cellpadding=0;cellspacing=0;border-radius:1px;font-family:-webkit-standard;letter-spacing:normal;orphans:auto;text-indent:0px;text-transform:none;widows:auto;word-spacing:0px;-webkit-text-size-adjust:auto;-webkit-text-stroke-width:0px;text-decoration:none;border-collapse:collapse;"',
+        'tdStyleHeader' : 'style="width:100%;border:1pt solid windowtext;padding:0in 5.4pt;vertical-align:top;"',
+        'tdStyleBody' : 'style="width:100%;border-style:none solid;border-left-width:1pt;border-right-width:1pt;padding:0in 5.4pt;vertical-align:top;"',
+        'spanStyleBlue' : 'style="color:#00b0f0;font-family:ciscosans,sans-serif;font-size:12pt;"',
+        'aStyle' : 'style="color:rgb(149, 79, 114);text-decoration:underline;"',
+        'tbodyStyle' : 'style=""'      
+    }
+    sheet = ss_client.Sheets.get_sheet(sheet_id)
+    column_names = ['Event Name','Area','State','City','Event Date']
+    msg_list = []
+    msg_list.append("<h1>Example Email</h1>")
+    msg_list.append("<table {}><thead><tr>".format(css['tableStyle']))
+    for column in column_names:
+        msg_list.append("<th>{}</th>".format(column))
+    msg_list.append("</tr></thead>")
+    msg_list.append("<tbody {}>".format(css['tbodyStyle']))
+    #msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format('Event Name','Area','State','City','Event Date'))
+    #msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<10} {:*<10}".format('*','*','*','*','*'))
+    #msg_list.append("  \n{:<60}".format('[link text](https://www.google.com)'))
+    for row in sheet.rows:
+        row_dict = {}
+        
+        for cell in row.cells:
+        #for c in range(0, len(sheet.columns)):
+            #print row.cells[c].value        
+            column_title = map_cell_data_to_columnId(sheet.columns, cell)
+            #if has hyperlink
+            #elif has value
+            if cell.value:
+                row_dict[column_title] = str(cell.value)
+            #else blank out with ''
+            else:
+                row_dict[column_title] = ''
+            #
+        msg_list.append("<tr {}>".format(css['trStyle']))
+        if row_dict['State'] == state:
+            for column in column_names:
+                msg_list.append("<td><span {}>{}</span></td>".format(css['spanStyle'],row_dict[column]))
+            #msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+        msg_list.append("</tr>")
+
+    msg_list.append("</tbody>")
+    msg_list.append("</table>")
+    msg = ''.join(msg_list)
+    print(msg)
+    print(get_size(msg))
+    #response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+    return msg
 
 def map_cell_data_to_columnId(columns,cell):
     #cell object has listing for column_id , but data shows {columnId: n}, weird
@@ -245,6 +309,49 @@ def get_size(obj, seen=None):
     elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
         size += sum([get_size(i, seen) for i in obj])
     return size 
+
+def generate_email(msg):
+    html_data = """ <html><head></head><body>{}</body></html>""".format(msg)
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = ""
+    msg['From'] = ""
+    msg['To'] = ""
+    msg['Cc'] = ""
+    msg['Bcc'] = ""
+    """
+    headers = ... dict of header key / value pairs ...
+    for key in headers:
+        value = headers[key]
+        if value and not isinstance(value, basestring):
+            value = str(value)
+        msg[key] = value
+    """
+    part = MIMEText(html_data, 'html')
+    msg.attach(part)
+
+    #outfile_name = os.path.join("/", "temp", "email_sample.eml")
+    outfile_name = "temp_email.eml"
+    with open(outfile_name, 'w') as outfile:
+        gen = generator.Generator(outfile)
+        gen.flatten(msg)  
+    return outfile_name  
+
+def test_send_email(room_id, email_filename):
+    m = MultipartEncoder({'roomId': room_id,
+                      'text': 'Events email',
+                      'files': (email_filename, open(email_filename, 'rb'),
+                      'image/png')})
+    r = requests.post('https://api.ciscospark.com/v1/messages', data=m,
+                    headers={'Authorization': SPARK_ACCESS_TOKEN,
+                    'Content-Type': m.content_type})
+    print (r.text)
+    #payload = {"roomId": room_id,"markdown": message}
+    #response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
+    #response = json.loads(response.text)
+    #print("botpost response: {}".format(response)) 
+    #return response["text"]
+    #return r.text
 
 if __name__ == "__main__":
     main()
