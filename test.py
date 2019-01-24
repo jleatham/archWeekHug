@@ -46,8 +46,8 @@ from secrets import SPARK_ACCESS_TOKEN, SMARTSHEET_TOKEN, HUGTEST_ROOM_ID
                Created By  3044614522333060
 '''
 
-bot_email = "hugtest@webex.bot"
-bot_name = "hugtest"
+BOT_EMAIL = "hugtest@webex.bot"
+BOT_NAME = "hugtest"
 arch_week_smartsheet_id = "2089577960761220"
 event_smartsheet_id = "489009441990532"
 event_name_column = "4193604173358980"
@@ -64,12 +64,13 @@ headers = {
 
 def main():
     ss_client = ss_get_client(SMARTSHEET_TOKEN)
-    area_dict = get_all_areas_and_associated_states(ss_client,event_smartsheet_id,column_filter_list)
+    #area_dict = get_all_areas_and_associated_states(ss_client,event_smartsheet_id,column_filter_list)
     #get_all_areas_and_associated_states(ss_client,arch_week_smartsheet_id)
     #test_help_msg(area_dict)
-    #test_print_state_events(ss_client,event_smartsheet_id,'TX')
-    #test_print_state_events_v2(ss_client,event_smartsheet_id,'TX')
-    msg = test_generate_html_table(ss_client,event_smartsheet_id,'TX')
+    #test_print_state_events(ss_client,event_smartsheet_id,'Costa Rica')
+
+
+    msg = test_generate_html_table_v3(ss_client,event_smartsheet_id,'NY')
     email_filename = generate_email(msg)
     test_send_email(HUGTEST_ROOM_ID,email_filename)
     
@@ -117,9 +118,14 @@ def get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = 
 def test_help_msg(area_dict):
 
     msg_list = []
-    msg_list.append("**Test Help Print**")
+    msg_list.append("``` \n")
+    msg_list.append("Select State code from below\n\n")
+    msg_list.append("Example:  {} TX  \n\n".format(BOT_NAME))
+    msg_list.append("{:<15}: {}  \n".format('Area', 'State Codes'))
+    msg_list.append("{:*<15}: {:*<60}  \n".format('', ''))
     for area, states in area_dict.items():
-        msg_list.append("\n\n**{}**  \n{}".format(area, ' '.join(states)))
+        msg_list.append("{:<15}: {}  \n".format(area, ' , '.join(states)))
+    msg_list.append("  \n```")
     msg = ''.join(msg_list)
     #print(msg)
     response = bot_post_to_room(HUGTEST_ROOM_ID, msg)    
@@ -133,10 +139,10 @@ def test_print_state_events(ss_client,sheet_id,state):
     sheet = ss_client.Sheets.get_sheet(sheet_id)
     
     msg_list = []
-    msg_list.append("**Test State Print**  \n```")
-    msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format('Event Name','Area','State','City','Event Date'))
-    msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<10} {:*<10}".format('*','*','*','*','*'))
-    msg_list.append("  \n{:<60}".format('[link text](https://www.google.com)'))
+    msg_list.append("**Events for {}**  \n".format(state))
+    msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
+    msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format('Event Name','Area','State','City','Event Date'))
+    msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<20} {:*<10}".format('*','*','*','*','*'))
     for row in sheet.rows:
         row_dict = {}
         for cell in row.cells:
@@ -156,7 +162,7 @@ def test_print_state_events(ss_client,sheet_id,state):
             #for column, value in row_dict.items():
             #    if column in ('State','Event Name','Area'):
             #        msg_list.append("{} = {}    ".format(column, value))
-            msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+            msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
             #msg_list.append("  \n")
     msg_list.append("  \n```")
     msg = ''.join(msg_list)
@@ -215,23 +221,37 @@ def test_generate_html_table(ss_client,sheet_id,state):
     #is there a way to filter before grabbing?  not sure
     #i see a include=['filters], but don't see a way to define that
     #until then, grab all and filter myself
+    '''
     css = {
         'trStyle' : 'style="background-color:transparent;"',
-        'spanStyle' :  'style= "color:black;font-family:ciscosans,sans-serif;font-size:12pt;"',
-        'tableStyle' : 'style="margin:5px;width:70%;border:2pt solid;cellpadding=0;cellspacing=0;border-radius:1px;font-family:-webkit-standard;letter-spacing:normal;orphans:auto;text-indent:0px;text-transform:none;widows:auto;word-spacing:0px;-webkit-text-size-adjust:auto;-webkit-text-stroke-width:0px;text-decoration:none;border-collapse:collapse;"',
-        'tdStyleHeader' : 'style="width:100%;border:1pt solid windowtext;padding:0in 5.4pt;vertical-align:top;"',
+        'spanStyle' :  'style= "color:black;font-family:calibri,sans-serif;font-size:12pt;"',
+        'tableStyle' : 'style="margin:5px;width:90%;border:2pt solid;cellpadding=0;cellspacing=0;border-radius:1px;font-family:-webkit-standard;letter-spacing:normal;orphans:auto;text-indent:0px;text-transform:none;widows:auto;word-spacing:0px;-webkit-text-size-adjust:auto;-webkit-text-stroke-width:0px;text-decoration:none;border-collapse:collapse;"',
+        'tdStyleHeader' : 'style="text-align:left;border:2pt solid windowtext;padding:0in 5.4pt;vertical-align:top;"',
         'tdStyleBody' : 'style="width:100%;border-style:none solid;border-left-width:1pt;border-right-width:1pt;padding:0in 5.4pt;vertical-align:top;"',
-        'spanStyleBlue' : 'style="color:#00b0f0;font-family:ciscosans,sans-serif;font-size:12pt;"',
+        'spanStyleBlue' : 'style="color:#00b0f0;font-family:calibri,sans-serif;font-size:12pt;"',
         'aStyle' : 'style="color:rgb(149, 79, 114);text-decoration:underline;"',
         'tbodyStyle' : 'style=""'      
     }
+    '''
+    css = {
+        'external' : '.ExternalClass * { line-height:105%; }',
+        'trStyle' : 'style="margin:0px; padding:0px;"',
+        'spanStyle' : 'style="margin:0px; padding:0px;"',
+        'tableStyle' : 'style="width:100%; cellpadding:0px; cellspacing:0px; border:0px"',
+        'tdStyleHeader' : 'style="margin:0px; padding:0px;"',
+        'tdStyleBody' : 'style="margin:0px; padding:0px;"',
+        'spanStyleBlue' : 'style="margin:0px; padding:0px;"',
+        'tbodyStyle' : 'style="margin:0px; padding:0px;"' 
+
+    }
     sheet = ss_client.Sheets.get_sheet(sheet_id)
-    column_names = ['Event Name','Area','State','City','Event Date']
+    column_names = [('Event Name','60'),('Area','5'),('State','5'),('City','10'),('Event Date','20')]
     msg_list = []
     msg_list.append("<h1>Example Email</h1>")
-    msg_list.append("<table {}><thead><tr>".format(css['tableStyle']))
-    for column in column_names:
-        msg_list.append("<th>{}</th>".format(column))
+    msg_list.append("<style type='text/css'>{}</style>".format(css['external']))
+    msg_list.append("<table {}><thead><tr {}>".format(css['tableStyle'],css['trStyle']))
+    for column, space in column_names:
+        msg_list.append("<th {}><span {}>{}</span></th>".format(css['tdStyleHeader'],css['spanStyleBlue'],column))
     msg_list.append("</tr></thead>")
     msg_list.append("<tbody {}>".format(css['tbodyStyle']))
     #msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format('Event Name','Area','State','City','Event Date'))
@@ -254,17 +274,116 @@ def test_generate_html_table(ss_client,sheet_id,state):
             #
         msg_list.append("<tr {}>".format(css['trStyle']))
         if row_dict['State'] == state:
-            for column in column_names:
+            for column, space in column_names:
                 msg_list.append("<td><span {}>{}</span></td>".format(css['spanStyle'],row_dict[column]))
             #msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
         msg_list.append("</tr>")
 
     msg_list.append("</tbody>")
     msg_list.append("</table>")
+    msg_list.append("<p></p>")
     msg = ''.join(msg_list)
     print(msg)
     print(get_size(msg))
     #response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+    return msg
+
+def test_generate_html_table_v2(ss_client,sheet_id,state):
+    msg = '''
+                <style type="text/css">
+            .ExternalClass table, .ExternalClass tr, .ExternalClass td {line-height: 100%;}
+            </style>
+
+            <table width="400" align="left" cellpadding="0" cellspacing="0" border="1">
+            <tr style="margin:0px; padding:0px;">
+                <td width="10" align="right" valign="top" style="border:none; margin:0px; padding:0px;">
+                <span style="margin:0px; padding:0px;">
+                &bull;
+                </span>
+                </td>
+                <td width="380" align="left" valign="top" style="border:none; margin:0px; padding:0px;">
+                <span style="margin:0px; padding:0px;">
+                Info next to bullet
+                </span>
+                </td>
+            </tr>
+            <tr style="margin:0px; padding:0px;">
+                <td width="10" align="right" valign="top" style="border:none; margin:0px; padding:0px;">
+                <span style="margin:0px; padding:0px;">
+                &bull;
+                </span>
+                </td>
+                <td width="380" align="left" valign="top" style="border:none; margin:0px; padding:0px;">
+                <span style="margin:0px; padding:0px;">
+                Info next to bullet
+                </span>
+                </td>
+            </tr>
+            </table>
+            '''
+    return msg
+
+def test_generate_html_table_v3(ss_client,sheet_id,state):
+    
+    css = {
+        'external' : '.ExternalClass table, .ExternalClass tr, .ExternalClass td {line-height: 100%;}',
+        'table' : 'width="100%" align="left" cellpadding="0" cellspacing="0" border="0px"',
+        'tr' : 'style="margin:0px; padding:0px;border:none;align:left;"',
+        'td' : 'style="border:none; margin:0px; padding:0px;align:left;"',
+        'span' : 'style="display: block;text-align: left;margin:0px; padding:0px; "'
+    }
+    sheet = ss_client.Sheets.get_sheet(sheet_id)
+    column_names = [('Event Name','60'),('Informational Link','1'),('Event Type','5'),('State','5'),('City','10'),('Event Date','20'),('Event Lead','1')]
+    msg_list = []
+    msg_list.append("<h1>Example Email</h1>")
+    msg_list.append("<style type='text/css'>{}</style>".format(css['external']))
+    msg_list.append("<table {}><thead><tr {}>".format(css['table'],css['tr']))
+    for column, space in column_names:
+        msg_list.append("<th {}><span {}>{}</span></th>".format(css['td'],css['span'],column))
+    msg_list.append("</tr></thead>")
+    msg_list.append("<tbody>")
+    #msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format('Event Name','Area','State','City','Event Date'))
+    #msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<10} {:*<10}".format('*','*','*','*','*'))
+    #msg_list.append("  \n{:<60}".format('[link text](https://www.google.com)'))
+    for row in sheet.rows:
+        row_dict = {}
+        
+        for cell in row.cells:
+        #for c in range(0, len(sheet.columns)):
+            #print row.cells[c].value        
+            column_title = map_cell_data_to_columnId(sheet.columns, cell)
+            #if has hyperlink
+            #elif has value
+
+
+            if cell.value:
+                row_dict[column_title] = str(cell.value)
+            #else blank out with ''
+            else:
+                row_dict[column_title] = ''
+            #
+        msg_list.append("<tr {}>".format(css['tr']))
+        if row_dict['State'] == state and row_dict['Event Status'] == 'Confirmed':
+            for column, space in column_names:
+                if column == 'Informational Link':
+                    if row_dict[column]:
+                        msg_list.append("<td><span {}><a href='{}'>Link</a></span></td>".format(css['span'],row_dict[column]))
+                    else:
+                        msg_list.append("<td><span {}>{}</span></td>".format(css['span'],' '))
+                else:
+                    msg_list.append("<td><span {}>{}</span></td>".format(css['span'],row_dict[column]))
+            #msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+        msg_list.append("</tr>")
+
+    msg_list.append("</tbody>")
+    msg_list.append("</table>")
+    msg_list.append("<p></p>")
+    msg = ''.join(msg_list)
+    print(msg)
+    print(get_size(msg))
+    #response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+    return msg
+    
     return msg
 
 def map_cell_data_to_columnId(columns,cell):
