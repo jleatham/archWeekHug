@@ -14,6 +14,7 @@ import smartsheet
 BOT_EMAIL = "hugtest@webex.bot"
 BOT_NAME = "hugtest"
 EVENT_SMARTSHEET_ID = "489009441990532"
+EVENT_FORM_URL = "https://app.smartsheet.com/b/form/78ef07e1b4164f56ba8ac1aebd98f8f1"
 event_area_column = "8697203800729476"
 event_state_column = "6985264196282244"
 AREA_COLUMN_FILTER = [event_area_column,event_state_column]
@@ -121,6 +122,7 @@ def format_code_print_for_bot(data,state):
     msg_list = []
     msg_list.append("**Events for {}**  \n".format(state))
     #msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
+    msg_list.append("Have an event to share?  Add it [here]({})  \n```".format(EVENT_FORM_URL))
     msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format('Event Name','Area','State','City','Event Date'))
     msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<20} {:*<10}".format('*','*','*','*','*'))
     for row_dict in data:
