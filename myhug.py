@@ -44,7 +44,7 @@ def process_bot_input_command(room_id,command):
         state_list = state_list_joined.split(' ')
 
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_list,NO_COLUMN_FILTER)
-        msg = format_code_print_for_bot(BOT_NAME,data,state_list_joined)
+        msg = format_code_print_for_bot(data,state_list_joined)
         response = bot_post_to_room(room_id, msg)
         msg = generate_html_table_for_bot(data,state_list_joined)
         #msg = test_generate_html_table_v3(ss_client,EVENT_SMARTSHEET_ID,'CA')
