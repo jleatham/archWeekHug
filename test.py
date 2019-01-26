@@ -2,12 +2,34 @@ import os
 import sys
 import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
+from datetime import datetime
+from operator import itemgetter
 import json
 from email import generator
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smartsheet
 from secrets import SPARK_ACCESS_TOKEN, SMARTSHEET_TOKEN, HUGTEST_ROOM_ID
+
+'''
+        #markdown help:
+        #newline    -->|  \n      <--doublespaces required
+        #paragraph  -->|\n\n
+        #bold       -->|**Bolded Text**
+        #italics    -->|*Italic Text*
+        #hyperlink  -->|[link text](https://www.google.com)
+        #numberlist -->|1. hello  \n2. bye  \n3. end
+        #codeblock  -->|```hello  \nis this code  \nx.hello()  \nblah  \n```\n\n**not code**
+        #mention    -->|<@personEmail:email@example.com|Joe> Whatup?
+        msg = ("**Commands available**: < spiff >,< news >,< promo >,< services >,< partner >,< capital >  \n"
+                "*example*: {bot} news  \n"
+                "*example*: {bot} spiff  \n"
+                "\n\n**Filter results**: < en >,< collab >,< dc >,< sec >,< app >  \n"
+                "*example*: {bot} news en  \n"
+                "*example*: {bot} spiff collab  \n"
+                ).format(bot = bot_name)
+        response = bot_post_to_room(room_id, msg)
+'''
 
 
 '''
@@ -48,12 +70,14 @@ from secrets import SPARK_ACCESS_TOKEN, SMARTSHEET_TOKEN, HUGTEST_ROOM_ID
 
 BOT_EMAIL = "hugtest@webex.bot"
 BOT_NAME = "hugtest"
+EVENT_SMARTSHEET_ID = "489009441990532"
 arch_week_smartsheet_id = "2089577960761220"
-event_smartsheet_id = "489009441990532"
+#event_smartsheet_id = "489009441990532"
 event_name_column = "4193604173358980"
 event_area_column = "8697203800729476"
 event_state_column = "6985264196282244"
-column_filter_list = [event_area_column,event_state_column]
+AREA_COLUMN_FILTER = [event_area_column,event_state_column]
+NO_COLUMN_FILTER = []
 
 url = "https://api.ciscospark.com/v1/messages"
 headers = {
@@ -64,15 +88,21 @@ headers = {
 
 def main():
     ss_client = ss_get_client(SMARTSHEET_TOKEN)
-    #area_dict = get_all_areas_and_associated_states(ss_client,event_smartsheet_id,column_filter_list)
-    #get_all_areas_and_associated_states(ss_client,arch_week_smartsheet_id)
-    #test_help_msg(area_dict)
-    #test_print_state_events(ss_client,event_smartsheet_id,'Costa Rica')
+    area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+    msg = format_help_msg(area_dict)
+    response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
 
-
-    msg = test_generate_html_table_v3(ss_client,event_smartsheet_id,'NY')
+    column_filter_list = []
+    state_list = ['TX','CA']
+    state_list_joined = ' '.join(state_list)
+    data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_list,NO_COLUMN_FILTER)
+    msg = format_code_print_for_bot(BOT_NAME,data,state_list_joined)
+    response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+    msg = generate_html_table_for_bot(data,state_list_joined)
+    #msg = test_generate_html_table_v3(ss_client,EVENT_SMARTSHEET_ID,'CA')
     email_filename = generate_email(msg)
-    test_send_email(HUGTEST_ROOM_ID,email_filename)
+    response = bot_send_email(HUGTEST_ROOM_ID,email_filename)
+
     
 
 def ss_get_client(SMARTSHEET_TOKEN):
@@ -83,14 +113,13 @@ def ss_get_client(SMARTSHEET_TOKEN):
     return ss_client
 
 def get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = []):
-    #shouldn't include column filter option if hard coding the cell values later on
-    #filter f0r 2 column reduces from 22 to 2.6 in size
-    #pull area column of event sheet, and do set list (or just type manually as not that many)
-    #create a dict with [] keys:
-    #temp_dict = {"south":[],"west":[]}
-    #column_ids=[<area id>,<city id>]
+    """
+        Sort through smartsheet and grab all Areas and their assosiated State Codes.
+        Output will look like:  {"south":["TX","AR","NC",etc],"west":["CA","OR",etc]}
+        Should update to not hardcode the columns to make function more reusable
+    """
     temp_area_list = []
-    #tempsheet = ss_client.Sheets.get_sheet(sheet_id, column_ids=[])
+
     sheet = ss_client.Sheets.get_sheet(sheet_id, column_ids=column_filter_list)
     #print("Full sheet size: {}       Filtered sheet size: {}".format(str(get_size(tempsheet)),str(get_size(sheet))))
     for row in sheet.rows:
@@ -115,7 +144,102 @@ def get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = 
     return area_dict
         #should look like: {"south":["TX","AR","NC",etc],"west":["CA","OR",etc]}
 
-def test_help_msg(area_dict):
+def get_all_data_and_filter(ss_client,sheet_id,state,column_filter_list = []):
+    sheet = ss_client.Sheets.get_sheet(sheet_id, column_ids=column_filter_list)
+    
+    all_data_list = []
+    for row in sheet.rows:
+        row_dict = {}
+        
+        for cell in row.cells:
+        #for c in range(0, len(sheet.columns)):
+            #print row.cells[c].value        
+            column_title = map_cell_data_to_columnId(sheet.columns, cell)
+            #if has hyperlink
+            #elif has value
+
+
+            if cell.value:
+                row_dict[column_title] = str(cell.value)
+            #else blank out with ''
+            else:
+                row_dict[column_title] = ''
+        
+        if (row_dict['State'] in state or row_dict['Event Type'] == 'Virtual') and (row_dict['Event Status'] == 'Confirmed' and datetime.strptime(row_dict['Event Date'], '%Y-%m-%d') > datetime.now() ):
+            if row_dict['Event Type'] == 'Virtual':
+                row_dict['City'] = 'Virtual'
+            all_data_list.append(row_dict)
+
+    sorted_data = sorted(all_data_list, key=itemgetter('State','City','Event Date'))
+    for i in sorted_data:
+        date_obj = datetime.strptime(i['Event Date'], '%Y-%m-%d')
+        i['Event Date'] = datetime.strftime(date_obj, '%b %d, %Y')
+        #print("{:<60} {:<10} {:<30} {:<10}".format(i['Event Name'],i['State'],i['City'],i['Event Date']))
+    return sorted_data
+
+#Code block version, how to get hyperlinks?
+def format_code_print_for_bot(BOT_NAME,data,state):
+
+    msg_list = []
+    msg_list.append("**Events for {}**  \n".format(state))
+    msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
+    msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format('Event Name','Area','State','City','Event Date'))
+    msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<20} {:*<10}".format('*','*','*','*','*'))
+    for row_dict in data:
+        msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+
+    msg_list.append("  \n```")
+    msg = ''.join(msg_list)
+    print(msg)
+    print(get_size(msg))
+    #response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+    return msg
+
+def generate_html_table_for_bot(data,state):
+    
+    css = {
+        'external' : '.ExternalClass table, .ExternalClass tr, .ExternalClass td {line-height: 100%;}',
+        'table' : 'width="100%" align="left" cellpadding="0" cellspacing="0" border="0px"',
+        'tr' : 'style="margin:0px; padding:0px;border:none;align:left;"',
+        'td' : 'style="border:none; margin:0px; padding:0px;align:left;"',
+        'span' : 'style="display: block;text-align: left;margin:0px; padding:0px; "'
+    }
+
+    column_names = [('Event Name','60'),('Informational Link','1'),('Event Type','5'),('State','5'),('City','10'),('Event Date','20'),('Event Lead','1')]
+    msg_list = []
+    msg_list.append("<h1>Events for {}</h1>".format(state))
+    msg_list.append("<style type='text/css'>{}</style>".format(css['external']))
+    msg_list.append("<table {}><thead><tr {}>".format(css['table'],css['tr']))
+    for column, space in column_names:
+        msg_list.append("<th {}><span {}>{}</span></th>".format(css['td'],css['span'],column))
+    msg_list.append("</tr></thead>")
+    msg_list.append("<tbody>")
+    #msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format('Event Name','Area','State','City','Event Date'))
+    #msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<10} {:*<10}".format('*','*','*','*','*'))
+    #msg_list.append("  \n{:<60}".format('[link text](https://www.google.com)'))
+    for row_dict in data:
+        msg_list.append("<tr {}>".format(css['tr']))
+        for column, space in column_names:
+            if column == 'Informational Link':
+                if row_dict[column]:
+                    msg_list.append("<td><span {}><a href='{}'>Link</a></span></td>".format(css['span'],row_dict[column]))
+                else:
+                    msg_list.append("<td><span {}>{}</span></td>".format(css['span'],' '))
+            else:
+                msg_list.append("<td><span {}>{}</span></td>".format(css['span'],row_dict[column]))
+        #msg_list.append("  \n{:<60} {:<10} {:<4} {:<10} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+        msg_list.append("</tr>")
+
+    msg_list.append("</tbody>")
+    msg_list.append("</table>")
+    msg_list.append("<p></p>")
+    msg = ''.join(msg_list)
+    print(msg)
+    print(get_size(msg))
+    #response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+    return msg
+
+def format_help_msg(area_dict):
 
     msg_list = []
     msg_list.append("``` \n")
@@ -128,7 +252,8 @@ def test_help_msg(area_dict):
     msg_list.append("  \n```")
     msg = ''.join(msg_list)
     #print(msg)
-    response = bot_post_to_room(HUGTEST_ROOM_ID, msg)    
+    #response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+    return msg
 
 
 #Code block version, how to get hyperlinks?
@@ -170,6 +295,9 @@ def test_print_state_events(ss_client,sheet_id,state):
     print(get_size(msg))
     response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
     #return msg
+
+
+
 
 
 #https://stackoverflow.com/questions/6046263/how-to-indent-a-few-lines-in-markdown-markup
@@ -335,7 +463,7 @@ def test_generate_html_table_v3(ss_client,sheet_id,state):
     sheet = ss_client.Sheets.get_sheet(sheet_id)
     column_names = [('Event Name','60'),('Informational Link','1'),('Event Type','5'),('State','5'),('City','10'),('Event Date','20'),('Event Lead','1')]
     msg_list = []
-    msg_list.append("<h1>Example Email</h1>")
+    msg_list.append("<h1>Events for {}</h1>".format(state))
     msg_list.append("<style type='text/css'>{}</style>".format(css['external']))
     msg_list.append("<table {}><thead><tr {}>".format(css['table'],css['tr']))
     for column, space in column_names:
@@ -383,8 +511,7 @@ def test_generate_html_table_v3(ss_client,sheet_id,state):
     print(get_size(msg))
     #response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
     return msg
-    
-    return msg
+
 
 def map_cell_data_to_columnId(columns,cell):
     #cell object has listing for column_id , but data shows {columnId: n}, weird
@@ -459,7 +586,7 @@ def generate_email(msg):
         gen.flatten(msg)  
     return outfile_name  
 
-def test_send_email(room_id, email_filename):
+def bot_send_email(room_id, email_filename):
     m = MultipartEncoder({'roomId': room_id,
                       'text': 'Events email',
                       'files': (email_filename, open(email_filename, 'rb'),
@@ -473,7 +600,7 @@ def test_send_email(room_id, email_filename):
     #response = json.loads(response.text)
     #print("botpost response: {}".format(response)) 
     #return response["text"]
-    #return r.text
+    return r.text
 
 if __name__ == "__main__":
     main()
