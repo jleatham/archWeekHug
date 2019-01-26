@@ -27,7 +27,7 @@ def hello(body):
     identity = body["data"]["personEmail"]
     text = body["data"]["id"]
     print("see POST from {}".format(identity))
-    if identity != bot_email:
+    if identity != BOT_EMAIL:
         command = get_msg_sent_to_bot(text).lower()
         command = (command.replace(bot_name, '')).strip()
         print("stripped command: {}".format(command))
