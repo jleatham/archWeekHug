@@ -41,14 +41,13 @@ def process_bot_input_command(room_id,command):
     ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     trigger = command.split(' ')
     if trigger[0] in ("events",'Events','EVENTS','Event','event','EVENT'):
-        state_list_joined = command.replace('events','').strip()
+        state_list_joined = command.replace(trigger[0],'').strip()
         state_list = state_list_joined.split(' ')
 
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_list,NO_COLUMN_FILTER)
         msg = format_code_print_for_bot(data,state_list_joined)
         response = bot_post_to_room(room_id, msg)
         msg = generate_html_table_for_bot(data,state_list_joined)
-        #msg = test_generate_html_table_v3(ss_client,EVENT_SMARTSHEET_ID,'CA')
         email_filename = generate_email(msg)
         response = bot_send_email(room_id,email_filename)        
     else:
