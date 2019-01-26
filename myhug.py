@@ -28,7 +28,8 @@ def hello(body):
     text = body["data"]["id"]
     print("see POST from {}".format(identity))
     if identity != BOT_EMAIL:
-        command = get_msg_sent_to_bot(text).lower()
+        #command = get_msg_sent_to_bot(text).lower()
+        command = get_msg_sent_to_bot(text)
         command = (command.replace(BOT_NAME, '')).strip()
         print("stripped command: {}".format(command))
         process_bot_input_command(room_id,command)
