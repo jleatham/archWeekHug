@@ -31,7 +31,7 @@ def hello(body):
         command = get_msg_sent_to_bot(text).lower()
         command = (command.replace(BOT_NAME, '')).strip()
         print("stripped command: {}".format(command))
-        process_bot_input_command(command)
+        process_bot_input_command(room_id,command)
 
 
 
