@@ -38,7 +38,8 @@ def hello(body):
 def process_bot_input_command(room_id,command):
     """ """
     ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
-    if command in ("events",'Events','EVENTS','Event','event','EVENT'):
+    trigger = command.split(' ')
+    if trigger[0] in ("events",'Events','EVENTS','Event','event','EVENT'):
         state_list_joined = command.replace('events','').strip()
         state_list = state_list_joined.split(' ')
 
