@@ -69,8 +69,8 @@ def format_help_msg(area_dict):
     msg_list.append("{:<15}: {}  \n".format('Area', 'State Codes'))
     msg_list.append("{:*<15}: {:*<60}  \n".format('', ''))
     for area, states in area_dict.items():
-        msg_list.append("{:<15}: {}  \n\n".format(area, ' , '.join(states)))
-    msg_list.append("Created by Minh Nguyen (minhngu2) and Josh Leatham (jleatham) from Commercial South Area  \n")
+        msg_list.append("{:<15}: {}  \n".format(area, ' , '.join(states)))
+    msg_list.append("  \nCreated by Minh Nguyen (minhngu2) and Josh Leatham (jleatham) from Commercial South Area  \n")
     msg_list.append("  \n```")
     msg = ''.join(msg_list)
     return msg
