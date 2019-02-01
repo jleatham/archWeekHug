@@ -157,8 +157,12 @@ def row_format_for_code_print(columns,header=False,row_dict={}):
         for column, space in columns:
             str_list.append("{c:<{s}} ".format(c=row_dict[column],s=space))
     
-    str = ''.join(str_list)   
-    return str     
+    str = ''.join(str_list)
+    if header == True: 
+        spacer_str =  "{:*<{s}}".format('  \n*',s=len(str))
+        return str, spacer_str 
+    else:
+        return str
 
 
 def generate_html_table_for_bot(data,state,columns):
