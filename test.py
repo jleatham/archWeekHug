@@ -78,6 +78,8 @@ event_area_column = "8697203800729476"
 event_state_column = "6985264196282244"
 AREA_COLUMN_FILTER = [event_area_column,event_state_column]
 NO_COLUMN_FILTER = []
+CODE_PRINT_COLUMNS = [('Event Name','60'),('State','4'),('City','20'),('Event Date','15'),('Architecture','25'),('Area','10')]
+EMAIL_COLUMNS = [('Event Name','60'),('Informational Link','1'),('Architecture','5'),('State','5'),('City','10'),('Event Date','20'),('Event Lead','1')]
 
 url = "https://api.ciscospark.com/v1/messages"
 headers = {
@@ -88,18 +90,17 @@ headers = {
 
 def main():
     ss_client = ss_get_client(SMARTSHEET_TOKEN)
-    area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
-    msg = format_help_msg(area_dict)
-    response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+    #area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+    #msg = format_help_msg(area_dict)
+    #response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
 
     column_filter_list = []
-    state_list = ['TX','CA']
+    state_list = ['TX']
     state_list_joined = ' '.join(state_list)
     data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_list,NO_COLUMN_FILTER)
-    msg = format_code_print_for_bot(BOT_NAME,data,state_list_joined)
+    msg = format_code_print_for_bot(BOT_NAME,data,state_list_joined,CODE_PRINT_COLUMNS)
     response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
-    msg = generate_html_table_for_bot(data,state_list_joined)
-    #msg = test_generate_html_table_v3(ss_client,EVENT_SMARTSHEET_ID,'CA')
+    msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
     email_filename = generate_email(msg)
     response = bot_send_email(HUGTEST_ROOM_ID,email_filename)
 
@@ -177,16 +178,20 @@ def get_all_data_and_filter(ss_client,sheet_id,state,column_filter_list = []):
         #print("{:<60} {:<10} {:<30} {:<10}".format(i['Event Name'],i['State'],i['City'],i['Event Date']))
     return sorted_data
 
-#Code block version, how to get hyperlinks?
-def format_code_print_for_bot(BOT_NAME,data,state):
+
+def format_code_print_for_bot(BOT_NAME,data,state,columns):
 
     msg_list = []
     msg_list.append("**Events for {}**  \n".format(state))
     msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
-    msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format('Event Name','Area','State','City','Event Date'))
-    msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<20} {:*<10}".format('*','*','*','*','*'))
+    #msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format('Event Name','Area','State','City','Event Date'))
+    #msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<20} {:*<10}".format('*','*','*','*','*'))
+    column_str, spacer_str = row_format_for_code_print(columns,header=True)
+    msg_list.append(column_str)
+    msg_list.append(spacer_str)    
     for row_dict in data:
-        msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+        #msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+        msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
 
     msg_list.append("  \n```")
     msg = ''.join(msg_list)
@@ -195,7 +200,33 @@ def format_code_print_for_bot(BOT_NAME,data,state):
     #response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
     return msg
 
-def generate_html_table_for_bot(data,state):
+def row_format_for_code_print(columns,header=False,row_dict={}):
+    """
+        dymanically creates the table data based on a list of tuples
+        e.g., column = [('Column Name','spacing integer'),(etc)]
+        Columns and row data can be dynamically created from smartsheets if
+        the column names are exact.
+    """
+    str_list = []
+    str_list.append("  \n")
+    #if printing table header
+    if header == True:
+        for column, space in columns:
+            str_list.append("{c:<{s}} ".format(c=column,s=space))
+    #else print the table data
+    else:
+        for column, space in columns:
+            str_list.append("{c:<{s}} ".format(c=row_dict[column],s=space))
+    
+    str = ''.join(str_list)
+    if header == True: 
+        spacer_str =  "{:*<{s}}".format('  \n*',s=len(str))
+        return str, spacer_str 
+    else:
+        return str
+
+
+def generate_html_table_for_bot(data,state,columns):
     
     css = {
         'external' : '.ExternalClass table, .ExternalClass tr, .ExternalClass td {line-height: 100%;}',
@@ -205,12 +236,11 @@ def generate_html_table_for_bot(data,state):
         'span' : 'style="display: block;text-align: left;margin:0px; padding:0px; "'
     }
 
-    column_names = [('Event Name','60'),('Informational Link','1'),('Event Type','5'),('State','5'),('City','10'),('Event Date','20'),('Event Lead','1')]
     msg_list = []
     msg_list.append("<h1>Events for {}</h1>".format(state))
     msg_list.append("<style type='text/css'>{}</style>".format(css['external']))
     msg_list.append("<table {}><thead><tr {}>".format(css['table'],css['tr']))
-    for column, space in column_names:
+    for column, space in columns:
         msg_list.append("<th {}><span {}>{}</span></th>".format(css['td'],css['span'],column))
     msg_list.append("</tr></thead>")
     msg_list.append("<tbody>")
@@ -219,7 +249,7 @@ def generate_html_table_for_bot(data,state):
     #msg_list.append("  \n{:<60}".format('[link text](https://www.google.com)'))
     for row_dict in data:
         msg_list.append("<tr {}>".format(css['tr']))
-        for column, space in column_names:
+        for column, space in columns:
             if column == 'Informational Link':
                 if row_dict[column]:
                     msg_list.append("<td><span {}><a href='{}'>Link</a></span></td>".format(css['span'],row_dict[column]))
@@ -296,6 +326,50 @@ def test_print_state_events(ss_client,sheet_id,state):
     response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
     #return msg
 
+def test_dynamic_print_state_events(ss_client,sheet_id,state):
+    #is there a way to filter before grabbing?  not sure
+    #i see a include=['filters], but don't see a way to define that
+    #until then, grab all and filter myself
+    sheet = ss_client.Sheets.get_sheet(sheet_id)
+    column_names = [('Event Name','60'),('Area','10'),('State','4'),('City','20'),('Event Date','10')]
+    column_str = "  \n"
+    for column, space in column_names:
+        column_str.append("{c:<{s}} ".format(c=column,s=space))
+    spacer_str =  "{:*<{s}}".format('  \n*',s=len(column_str))
+    msg_list = []
+    msg_list.append("**Events for {}**  \n".format(state))
+    msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
+    #msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format('Event Name','Area','State','City','Event Date'))
+    #msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<20} {:*<10}".format('*','*','*','*','*'))
+    msg_list.append(column_str)
+    msg_list.append(spacer_str)
+    for row in sheet.rows:
+        row_dict = {}
+        for cell in row.cells:
+        #for c in range(0, len(sheet.columns)):
+            #print row.cells[c].value        
+            column_title = map_cell_data_to_columnId(sheet.columns, cell)
+            #if has hyperlink
+            #elif has value
+            if cell.value:
+                row_dict[column_title] = str(cell.value)
+            #else blank out with ''
+            else:
+                row_dict[column_title] = ''
+            #
+        if row_dict['State'] == state:
+            #msg_list.append("  \n")
+            #for column, value in row_dict.items():
+            #    if column in ('State','Event Name','Area'):
+            #        msg_list.append("{} = {}    ".format(column, value))
+            msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+            #msg_list.append("  \n")
+    msg_list.append("  \n```")
+    msg = ''.join(msg_list)
+    print(msg)
+    print(get_size(msg))
+    response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
+    #return msg
 
 
 

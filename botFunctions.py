@@ -19,6 +19,8 @@ event_area_column = "8697203800729476"
 event_state_column = "6985264196282244"
 AREA_COLUMN_FILTER = [event_area_column,event_state_column]
 NO_COLUMN_FILTER = []
+CODE_PRINT_COLUMNS = [('Event Name','60'),('State','4'),('City','20'),('Event Date','15'),('Architecture','25'),('Area','10')]
+EMAIL_COLUMNS = [('Event Name','60'),('Informational Link','1'),('Architecture','5'),('State','5'),('City','10'),('Event Date','20'),('Event Lead','1')]
 
 def ss_get_client(SMARTSHEET_TOKEN):
     #ss_client = smartsheet.Smartsheet(os.environ['SMARTSHEET_TOKEN'])
@@ -64,8 +66,10 @@ def format_help_msg(area_dict):
     msg_list = []
     msg_list.append("``` \n")
     msg_list.append("Select State code from below\n\n")
-    msg_list.append("Example:  {} events TX  \n".format(BOT_NAME))
-    msg_list.append("Example:  {} events CA NV WA  \n\n".format(BOT_NAME))
+    #add if else for whether bot is in space or 1 on 1.  No need for @ if 1 on 1
+    msg_list.append("Example:  @{} events TX  \n".format(BOT_NAME))
+    msg_list.append("Example:  @{} events CA NV WA  \n".format(BOT_NAME))
+    msg_list.append("Remove the botname when not in space (1 on 1)  \n\n".format(BOT_NAME))
     msg_list.append("{:<15}: {}  \n".format('Area', 'State Codes'))
     msg_list.append("{:*<15}: {:*<60}  \n".format('', ''))
     for area, states in area_dict.items():
@@ -111,7 +115,7 @@ def get_all_data_and_filter(ss_client,sheet_id,state,column_filter_list = []):
         i['Event Date'] = datetime.strftime(date_obj, '%b %d, %Y')
     return sorted_data
 
-def format_code_print_for_bot(data,state):
+def format_code_print_for_bot(data,state,columns):
     """
         Take pre-sorted data [{},{},{},..] and apply markdown
         Webex does not allow for large data table formatting so code blocks(```) are used as alternative.
@@ -124,16 +128,40 @@ def format_code_print_for_bot(data,state):
     msg_list.append("**Events for {}**  \n".format(state))
     #msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
     msg_list.append("Have an event to share?  Add it [here]({})  \n```".format(EVENT_FORM_URL))
-    msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format('Event Name','Area','State','City','Event Date'))
-    msg_list.append("  \n{:*<60} {:*<10} {:*<4} {:*<20} {:*<10}".format('*','*','*','*','*'))
+    column_str, spacer_str = row_format_for_code_print(columns,header=True)
+    msg_list.append(column_str)
+    msg_list.append(spacer_str)       
     for row_dict in data:
-        msg_list.append("  \n{:<60} {:<10} {:<4} {:<20} {:<10}".format(row_dict['Event Name'],row_dict['Area'],row_dict['State'],row_dict['City'],row_dict['Event Date']))
+        msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
 
     msg_list.append("  \n```")
     msg = ''.join(msg_list)
     return msg
 
-def generate_html_table_for_bot(data,state):
+
+def row_format_for_code_print(columns,header=False,row_dict={}):
+    """
+        dymanically creates the table data based on a list of tuples
+        e.g., column = [('Column Name','spacing integer'),(etc)]
+        Columns and row data can be dynamically created from smartsheets if
+        the column names are exact.
+    """
+    str_list = []
+    str_list.append("  \n")
+    #if printing table header
+    if header == True:
+        for column, space in columns:
+            str_list.append("{c:<{s}} ".format(c=column,s=space))
+    #else print the table data
+    else:
+        for column, space in columns:
+            str_list.append("{c:<{s}} ".format(c=row_dict[column],s=space))
+    
+    str = ''.join(str_list)   
+    return str     
+
+
+def generate_html_table_for_bot(data,state,columns):
     """
         Take pre-formatted data and prepare html data to be emailed
         Takes each row and adds to table with built in in-line CSS
@@ -149,19 +177,18 @@ def generate_html_table_for_bot(data,state):
     }
 
     #using a list of tuples, the second item is not used today, but could be later if table percent widths need to be added
-    column_names = [('Event Name','60'),('Informational Link','1'),('Event Type','5'),('State','5'),('City','10'),('Event Date','20'),('Event Lead','1')]
     msg_list = []
     msg_list.append("<h1>Events for {}</h1>".format(state))
     msg_list.append("<style type='text/css'>{}</style>".format(css['external']))
     msg_list.append("<table {}><thead><tr {}>".format(css['table'],css['tr']))
-    for column, space in column_names:
+    for column, space in columns:
         msg_list.append("<th {}><span {}>{}</span></th>".format(css['td'],css['span'],column))
     msg_list.append("</tr></thead>")
     msg_list.append("<tbody>")
 
     for row_dict in data:
         msg_list.append("<tr {}>".format(css['tr']))
-        for column, space in column_names:
+        for column, space in columns:
             if column == 'Informational Link':
                 if row_dict[column]:
                     msg_list.append("<td><span {}><a href='{}'>Link</a></span></td>".format(css['span'],row_dict[column]))

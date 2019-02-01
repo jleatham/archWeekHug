@@ -3,6 +3,7 @@ import os
 import requests
 import json
 from botFunctions import BOT_EMAIL, BOT_NAME, EVENT_SMARTSHEET_ID, AREA_COLUMN_FILTER, NO_COLUMN_FILTER
+from botFunctions import CODE_PRINT_COLUMNS, EMAIL_COLUMNS
 from botFunctions import ss_get_client, get_all_areas_and_associated_states
 from botFunctions import format_help_msg,get_all_data_and_filter, format_code_print_for_bot
 from botFunctions import generate_html_table_for_bot, map_cell_data_to_columnId
@@ -45,9 +46,9 @@ def process_bot_input_command(room_id,command):
         state_list = state_list_joined.split(' ')
 
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_list,NO_COLUMN_FILTER)
-        msg = format_code_print_for_bot(data,state_list_joined)
+        msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS)
         response = bot_post_to_room(room_id, msg)
-        msg = generate_html_table_for_bot(data,state_list_joined)
+        msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
         email_filename = generate_email(msg)
         response = bot_send_email(room_id,email_filename)        
     else:
