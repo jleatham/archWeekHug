@@ -69,7 +69,7 @@ def format_help_msg(area_dict):
     #add if else for whether bot is in space or 1 on 1.  No need for @ if 1 on 1
     msg_list.append("Example:  @{} events TX  \n".format(BOT_NAME))
     msg_list.append("Example:  @{} events CA NV WA  \n".format(BOT_NAME))
-    msg_list.append("Remove the botname when not in space (1 on 1)  \n\n".format(BOT_NAME))
+    msg_list.append("Remove the @{} when not in multi-user space (i.e., 1 on 1)  \n\n".format(BOT_NAME))
     msg_list.append("{:<15}: {}  \n".format('Area', 'State Codes'))
     msg_list.append("{:*<15}: {:*<60}  \n".format('', ''))
     for area, states in area_dict.items():
