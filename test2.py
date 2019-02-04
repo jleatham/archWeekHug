@@ -34,7 +34,7 @@ def error_handling(response,err_code,user_input):
     #"errors":[{"description":"Unable to post message to room: \"The request payload is too big\""}],
     # "trackingId":"ROUTER_5C5510D1-D8A4-01BB-0055-48A302E70055"}
 
-    message = ("Error code: {} \n User input: {} \n Error:".format(err_code,user_input,response["message"]))
+    message = ("Error code: {} \n User input: {} \n Error: {}".format(err_code,user_input,response["message"]))
     bot_post_to_room(HUGTEST_ROOM_ID,message)
     
     return response["message"]
