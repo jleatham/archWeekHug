@@ -261,6 +261,6 @@ def bot_send_email(room_id, email_filename):
                       'files': (email_filename, open(email_filename, 'rb'),
                       'image/png')})
     r = requests.post('https://api.ciscospark.com/v1/messages', data=m,
-                    headers={'Authorization': os.environ['BOT_TOKEN'],
+                    headers={'Authorization': os.environ['EVENTS_TOKEN'],
                     'Content-Type': m.content_type})
     return r.text

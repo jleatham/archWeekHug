@@ -68,7 +68,11 @@ def process_bot_input_command(room_id,command, headers, bot_name):
     trigger = command.split(' ')
     if trigger[0] in ("events",'Events','EVENTS','Event','event','EVENT'):
         state_list_joined = command.replace(trigger[0],'').strip()
+        print("command edit 1: {}".format(state_list_joined))
+        state_list_joined = state_list_joined.replace(',','')
+        print("command edit 2: {}".format(state_list_joined))
         state_list = state_list_joined.split(' ')
+        print("Final list: {}".format(str(state_list)))
 
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_list,NO_COLUMN_FILTER)
         msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS)
