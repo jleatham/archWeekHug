@@ -76,7 +76,7 @@ def process_bot_input_command(room_id,command, headers, bot_name):
       
         state_list = state_list_joined.split(' ')
         print("Final list: {}".format(str(state_list)))
-        for state in xrange(len(state_list)):
+        for state in range(len(state_list)):
             if len(state) == 2:
                 state_list[state] = state.upper()
 
