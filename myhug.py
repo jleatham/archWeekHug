@@ -34,6 +34,7 @@ def hello(body):
     text = body["data"]["id"]
     print("see POST from {}".format(identity))
     if identity != TEST_EMAIL:
+        print("{}-----{}".format(identity,TEST_EMAIL))
         #command = get_msg_sent_to_bot(text).lower()
         command = get_msg_sent_to_bot(text, TEST_HEADERS)
         command = (command.replace(TEST_NAME, '')).strip()
@@ -51,6 +52,7 @@ def events(body):
     text = body["data"]["id"]
     print("see POST from {}".format(identity))
     if identity != EVENTS_EMAIL:
+        print("{}-----{}".format(identity,EVENTS_EMAIL))
         #command = get_msg_sent_to_bot(text).lower()
         command = get_msg_sent_to_bot(text, EVENTS_HEADERS)
         command = (command.replace(EVENTS_NAME, '')).strip()
