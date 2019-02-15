@@ -2,7 +2,8 @@ import hug
 import os
 import requests
 import json
-from botFunctions import BOT_EMAIL, BOT_NAME, EVENT_SMARTSHEET_ID, AREA_COLUMN_FILTER, NO_COLUMN_FILTER
+from botFunctions import TEST_EMAIL, TEST_NAME, EVENT_SMARTSHEET_ID, AREA_COLUMN_FILTER, NO_COLUMN_FILTER
+from botFunctions import EVENTS_EMAIL, EVENTS_NAME
 from botFunctions import CODE_PRINT_COLUMNS, EMAIL_COLUMNS
 from botFunctions import ss_get_client, get_all_areas_and_associated_states
 from botFunctions import format_help_msg,get_all_data_and_filter, format_code_print_for_bot
@@ -11,13 +12,17 @@ from botFunctions import generate_email, bot_send_email
 
 
 
-url = "https://api.ciscospark.com/v1/messages"
-headers = {
+URL = "https://api.ciscospark.com/v1/messages"
+TEST_HEADERS = {
     'Authorization': os.environ['BOT_TOKEN'],
     'Content-Type': "application/json",
     'cache-control': "no-cache"
 }
-
+EVENTS_HEADERS = {
+    'Authorization': os.environ['EVENTS_TOKEN'],
+    'Content-Type': "application/json",
+    'cache-control': "no-cache"
+}
 
 
 @hug.post('/hello', examples='hello')
@@ -28,17 +33,34 @@ def hello(body):
     identity = body["data"]["personEmail"]
     text = body["data"]["id"]
     print("see POST from {}".format(identity))
-    if identity != BOT_EMAIL:
+    if identity != TEST_EMAIL:
         #command = get_msg_sent_to_bot(text).lower()
-        command = get_msg_sent_to_bot(text)
-        command = (command.replace(BOT_NAME, '')).strip()
+        command = get_msg_sent_to_bot(text, TEST_HEADERS)
+        command = (command.replace(TEST_NAME, '')).strip()
         command = (command.replace('@', '')).strip()
         print("stripped command: {}".format(command))
-        process_bot_input_command(room_id,command)
+        process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
+
+
+@hug.post('/events', examples='events')
+def events(body):
+    """Test for webex teams"""
+    #print("GOT {}: {}".format(type(body), repr(body)))
+    room_id = body["data"]["roomId"]
+    identity = body["data"]["personEmail"]
+    text = body["data"]["id"]
+    print("see POST from {}".format(identity))
+    if identity != EVENTS_EMAIL:
+        #command = get_msg_sent_to_bot(text).lower()
+        command = get_msg_sent_to_bot(text, EVENTS_HEADERS)
+        command = (command.replace(EVENTS_NAME, '')).strip()
+        command = (command.replace('@', '')).strip()
+        print("stripped command: {}".format(command))
+        process_bot_input_command(room_id,command, EVENTS_HEADERS, EVENTS_NAME)
 
 
 
-def process_bot_input_command(room_id,command):
+def process_bot_input_command(room_id,command, headers, bot_name):
     """ """
     ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     trigger = command.split(' ')
@@ -48,27 +70,28 @@ def process_bot_input_command(room_id,command):
 
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_list,NO_COLUMN_FILTER)
         msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS)
-        response = bot_post_to_room(room_id, msg)
+        response = bot_post_to_room(room_id, msg, headers)
         msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
         email_filename = generate_email(msg)
         response = bot_send_email(room_id,email_filename)        
     else:
         area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
-        msg = format_help_msg(area_dict)
-        response = bot_post_to_room(room_id, msg)
+        msg = format_help_msg(area_dict, bot_name)
+        response = bot_post_to_room(room_id, msg, headers)
                     
 
-
-def bot_post_to_room(room_id, message):
+'''
+def bot_post_to_room(room_id, message, headers):
 
     payload = {"roomId": room_id,"markdown": message}
-    response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
+    response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
     response = json.loads(response.text)
     #print("botpost response: {}".format(response)) 
     return response["text"]
+'''
 
-def get_msg_sent_to_bot(msg_id):
-    urltext = url + "/" + msg_id
+def get_msg_sent_to_bot(msg_id, headers):
+    urltext = URL + "/" + msg_id
     payload = ""
 
     response = requests.request("GET", urltext, data=payload, headers=headers)
@@ -76,6 +99,38 @@ def get_msg_sent_to_bot(msg_id):
     #print ("Message to bot : {}".format(response["text"]))
     return response["text"]
 
+
+def bot_post_to_room(room_id, message, headers):
+    #try to post
+    payload = {"roomId": room_id,"markdown": message}
+    response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
+    #error handling
+    if response.status_code != 200:
+        #modify function to receive user_input as well so we can pass through
+        user_input = "some test message for the moment"
+        #send to the DEVs bot room
+        error_handling(response,response.status_code,user_input,room_id,headers)
+
+
+      
+
+
+def error_handling(response,err_code,user_input,room_id,headers):
+
+    error = json.loads(response.text) #converts to type DICT
+    #grabs the error response from teams
+    #Example: {"message":"Unable to post message to room: \"The request payload is too big\"",
+    #"errors":[{"description":"Unable to post message to room: \"The request payload is too big\""}],
+    # "trackingId":"ROUTER_5C5510D1-D8A4-01BB-0055-48A302E70055"}
+
+    #send to DEVs bot room
+    message = ("**Error code**: {}  \n**User input**: {}  \n**Error**: {}".format(err_code,user_input,error["message"]))
+    bot_post_to_room(os.environ['TEST_ROOM_ID'],message,headers)
+    
+    #need to add error handling here
+    #if XYZ in response.text then, etc
+    message = "Looks like we've hit a snag! Sending feedback to the development team."
+    bot_post_to_room(room_id,message,headers)
 
 
 #goal would be to say <botname> <state code>

@@ -13,6 +13,10 @@ import smartsheet
 
 BOT_EMAIL = "hugtest@webex.bot"
 BOT_NAME = "hugtest"
+TEST_EMAIL = os.environ['TEST_EMAIL']
+TEST_NAME = os.environ['TEST_NAME']
+EVENTS_EMAIL = os.environ['EVENTS_EMAIL']
+EVENTS_NAME = os.environ['EVENTS_NAME']
 EVENT_SMARTSHEET_ID = "489009441990532"
 EVENT_FORM_URL = "https://app.smartsheet.com/b/form/78ef07e1b4164f56ba8ac1aebd98f8f1"
 event_area_column = "8697203800729476"
@@ -56,7 +60,7 @@ def get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = 
         area_dict[key] = list(set(value))
     return area_dict
 
-def format_help_msg(area_dict):
+def format_help_msg(area_dict, bot_name):
     """
         Takes area_dict from above and formats the output using markdown codeblocks(```)
         area_dict looks like: {"south":["TX","AR","NC",etc],"west":["CA","OR",etc]} so need
@@ -67,9 +71,9 @@ def format_help_msg(area_dict):
     msg_list.append("``` \n")
     msg_list.append("Select State code from below\n\n")
     #add if else for whether bot is in space or 1 on 1.  No need for @ if 1 on 1
-    msg_list.append("Example:  @{} events TX  \n".format(BOT_NAME))
-    msg_list.append("Example:  @{} events CA NV WA  \n".format(BOT_NAME))
-    msg_list.append("Remove the @{} when not in multi-user space (i.e., 1 on 1)  \n\n".format(BOT_NAME))
+    msg_list.append("Example:  @{} events TX  \n".format(bot_name))
+    msg_list.append("Example:  @{} events CA NV WA  \n".format(bot_name))
+    msg_list.append("Remove the @{} when not in multi-user space (i.e., 1 on 1)  \n\n".format(bot_name))
     msg_list.append("{:<15}: {}  \n".format('Area', 'State Codes'))
     msg_list.append("{:*<15}: {:*<60}  \n".format('', ''))
     for area, states in area_dict.items():
