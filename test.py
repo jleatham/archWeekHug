@@ -10,6 +10,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smartsheet
 from secrets import SPARK_ACCESS_TOKEN, SMARTSHEET_TOKEN, HUGTEST_ROOM_ID
+#todo, integrate postgres on heroku and store smartsheet data
+#https://stackoverflow.com/questions/20775490/how-to-create-or-manage-heroku-postgres-database-instance
 
 '''
         #markdown help:
@@ -95,7 +97,7 @@ def main():
     #response = bot_post_to_room(HUGTEST_ROOM_ID, msg)
 
     column_filter_list = []
-    state_list = ['TX']
+    state_list = ['TX','CA','KY','MN','MO','MI','OH','IL','IA','KS','CO','NE','WI','ND','ID']
     state_list_joined = ' '.join(state_list)
     data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_list,NO_COLUMN_FILTER)
     msg = format_code_print_for_bot(BOT_NAME,data,state_list_joined,CODE_PRINT_COLUMNS)
@@ -603,7 +605,7 @@ def map_cell_data_to_columnId(columns,cell):
             return column.title
         
 
-
+'''
 def bot_post_to_room(room_id, message):
 
     payload = {"roomId": room_id,"markdown": message}
@@ -611,6 +613,39 @@ def bot_post_to_room(room_id, message):
     response = json.loads(response.text)
     print("botpost response: {}".format(response)) 
     return response["text"]
+'''
+def bot_post_to_room(room_id, message):
+    #try to post
+    payload = {"roomId": room_id,"markdown": message}
+    response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
+    #error handling
+    if response.status_code != 200:
+        #modify function to receive user_input as well so we can pass through
+        user_input = "some test message for the moment"
+        #send to the DEVs bot room
+        error_handling(response,response.status_code,user_input,room_id)
+
+
+      
+
+
+def error_handling(response,err_code,user_input,room_id):
+
+    error = json.loads(response.text) #converts to type DICT
+    #grabs the error response from teams
+    #Example: {"message":"Unable to post message to room: \"The request payload is too big\"",
+    #"errors":[{"description":"Unable to post message to room: \"The request payload is too big\""}],
+    # "trackingId":"ROUTER_5C5510D1-D8A4-01BB-0055-48A302E70055"}
+
+    #send to DEVs bot room
+    message = ("**Error code**: {}  \n**User input**: {}  \n**Error**: {}".format(err_code,user_input,error["message"]))
+    bot_post_to_room(HUGTEST_ROOM_ID,message)
+    
+    #need to add error handling here
+    #if XYZ in response.text then, etc
+    message = "Looks like we've hit a snag! Sending feedback to the development team."
+    bot_post_to_room(room_id,message)
+
 
 
 def get_size(obj, seen=None):
