@@ -2,6 +2,7 @@ import hug
 import os
 import requests
 import json
+import re
 from botFunctions import TEST_EMAIL, TEST_NAME, EVENT_SMARTSHEET_ID, AREA_COLUMN_FILTER, NO_COLUMN_FILTER
 from botFunctions import EVENTS_EMAIL, EVENTS_NAME
 from botFunctions import CODE_PRINT_COLUMNS, EMAIL_COLUMNS
@@ -141,7 +142,11 @@ def error_handling(response,err_code,user_input,room_id,headers):
     
     #need to add error handling here
     #if XYZ in response.text then, etc
-    message = "Looks like we've hit a snag! Sending feedback to the development team."
+    search_obj = re.search(r'7439',error["message"])
+    if search_obj:
+        message = "Too many results for Teams output, sending email instead:"
+    else:
+        message = "Looks like we've hit a snag! Sending feedback to the development team."
     bot_post_to_room(room_id,message,headers)
 
 
