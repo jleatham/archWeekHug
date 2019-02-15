@@ -75,11 +75,11 @@ def process_bot_input_command(room_id,command, headers, bot_name):
         print("command edit 3: {}".format(state_list_joined))
       
         state_list = state_list_joined.split(' ')
-        print("Final list: {}".format(str(state_list)))
+        print("state list: {}".format(str(state_list)))
         for state in range(len(state_list)):
-            if len(state) == 2:
-                state_list[state] = state.upper()
-
+            if len(state_list[state]) == 2:
+                state_list[state] = state_list[state].upper()
+        print("Final state list: {}".format(str(state_list)))
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_list,NO_COLUMN_FILTER)
         msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS)
         response = bot_post_to_room(room_id, msg, headers)
