@@ -265,3 +265,18 @@ def bot_send_email(room_id, email_filename):
                     headers={'Authorization': os.environ['EVENTS_TOKEN'],
                     'Content-Type': m.content_type})
     return r.text
+
+def send_log_to_ss(bot_name,timestamp,identity,command,room_id):
+
+    headers = {'Authorization': "Bearer "+os.environ['SMARTSHEET_TOKEN'],'Content-Type': "application/json"}
+    url = "https://api.smartsheet.com/2.0/sheets/"+os.environ['SS_LOG_ID']+"/rows"    
+    payload = '{"toBottom":true, "cells": [ \
+                {"columnId": 6415325714507652,  "value": "'+ bot_name +'",    "strict": false}, \
+                {"columnId": 4163525900822404, "value": "'+ timestamp +'",    "strict": false}, \
+                {"columnId": 8667125528192900, "value": "'+ identity +'", "strict": false}, \
+                {"columnId": 504351203583876, "value": "'+ command +'", "strict": false}, \
+                {"columnId": 5007950830954372, "value": "'+ room_id +'", "strict": false} \
+                ] }'     
+    response = requests.request("POST", url, data=payload, headers=headers)
+    responseJson = json.loads(response.text)
+    print(str(responseJson))

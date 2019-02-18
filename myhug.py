@@ -3,6 +3,7 @@ import os
 import requests
 import json
 import re
+from datetime import datetime
 from botFunctions import TEST_EMAIL, TEST_NAME, EVENT_SMARTSHEET_ID, AREA_COLUMN_FILTER, NO_COLUMN_FILTER
 from botFunctions import EVENTS_EMAIL, EVENTS_NAME
 from botFunctions import CODE_PRINT_COLUMNS, EMAIL_COLUMNS
@@ -42,6 +43,7 @@ def hello(body):
         command = (command.replace('@', '')).strip()
         print("stripped command: {}".format(command))
         process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
+        send_log_to_ss(TEST_NAME,datetime.now(),identity,command,room_id)
 
 
 @hug.post('/events', examples='events')
@@ -61,6 +63,7 @@ def events(body):
         command = (command.replace('@', '')).strip()
         print("stripped command: {}".format(command))
         process_bot_input_command(room_id,command, EVENTS_HEADERS, EVENTS_NAME)
+        #send_log_to_ss(EVENTS_NAME,datetime.now(),identity,command,room_id)
 
 
 
