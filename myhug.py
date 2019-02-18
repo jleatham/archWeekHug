@@ -57,6 +57,7 @@ def events(body):
         #command = get_msg_sent_to_bot(text).lower()
         command = get_msg_sent_to_bot(text, EVENTS_HEADERS)
         command = (command.replace(EVENTS_NAME, '')).strip()
+        command = (command.replace('EVENT-TBD', '')).strip() #temp due to typo
         command = (command.replace('@', '')).strip()
         print("stripped command: {}".format(command))
         process_bot_input_command(room_id,command, EVENTS_HEADERS, EVENTS_NAME)
@@ -74,7 +75,7 @@ def process_bot_input_command(room_id,command, headers, bot_name):
         print("command edit 2: {}".format(state_list_joined))        
         state_list_joined = state_list_joined.replace(',',' ')
         print("command edit 3: {}".format(state_list_joined))
-      
+        #re.sub('\s+', ' ', mystring).strip() #remove additional whitespace - also a way with re to strip non alpha characters
         state_list = state_list_joined.split(' ')
         print("state list: {}".format(str(state_list)))
         for state in range(len(state_list)):
