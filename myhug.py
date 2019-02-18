@@ -43,7 +43,7 @@ def hello(body):
         command = (command.replace('@', '')).strip()
         print("stripped command: {}".format(command))
         process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
-        send_log_to_ss(TEST_NAME,datetime.now(),identity,command,room_id)
+        send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
 
 
 @hug.post('/events', examples='events')
@@ -63,7 +63,7 @@ def events(body):
         command = (command.replace('@', '')).strip()
         print("stripped command: {}".format(command))
         process_bot_input_command(room_id,command, EVENTS_HEADERS, EVENTS_NAME)
-        #send_log_to_ss(EVENTS_NAME,datetime.now(),identity,command,room_id)
+        send_log_to_ss(EVENTS_NAME,str(datetime.now()),identity,command,room_id)
 
 
 
