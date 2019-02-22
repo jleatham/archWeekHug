@@ -29,7 +29,9 @@ EVENTS_HEADERS = {
 
 @hug.post('/hello', examples='hello')
 def hello(body):
-    """Test for webex teams"""
+    """
+        Test bot for new features.
+    """
     #print("GOT {}: {}".format(type(body), repr(body)))
     room_id = body["data"]["roomId"]
     identity = body["data"]["personEmail"]
@@ -48,7 +50,15 @@ def hello(body):
 
 @hug.post('/events', examples='events')
 def events(body):
-    """Test for webex teams"""
+    """
+        Production for EVENTS-TBD bot
+        Takes the webhook data <body> and parses out the sender and the message
+        Must filter out all messages sent by bot as those come back as part of webhook
+        Strips the command of the botname, and then sends the command to take action
+        Finally, we log the interaction in smartsheets
+
+        Future: regex search identity for domain verification
+    """
     #print("GOT {}: {}".format(type(body), repr(body)))
     room_id = body["data"]["roomId"]
     identity = body["data"]["personEmail"]
@@ -68,7 +78,15 @@ def events(body):
 
 
 def process_bot_input_command(room_id,command, headers, bot_name):
-    """ """
+    """ 
+        Take the 1st word sent to the bot: check if it is a command
+        If command, process, else, send help message
+        If events trigger:
+            sanitize the command, remove commas, spaces, and bytestrings
+            if 2 digit state code, capitalize it
+            Fetch the data from smartsheets, then search based on input
+            Format the data and send to teams room
+    """
     ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     trigger = command.split(' ')
     if trigger[0] in ("events",'Events','EVENTS','Event','event','EVENT'):
@@ -97,15 +115,6 @@ def process_bot_input_command(room_id,command, headers, bot_name):
         response = bot_post_to_room(room_id, msg, headers)
                     
 
-'''
-def bot_post_to_room(room_id, message, headers):
-
-    payload = {"roomId": room_id,"markdown": message}
-    response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
-    response = json.loads(response.text)
-    #print("botpost response: {}".format(response)) 
-    return response["text"]
-'''
 
 def get_msg_sent_to_bot(msg_id, headers):
     urltext = URL + "/" + msg_id
@@ -153,28 +162,3 @@ def error_handling(response,err_code,user_input,room_id,headers):
         message = "Looks like we've hit a snag! Sending feedback to the development team."
     bot_post_to_room(room_id,message,headers)
 
-
-#goal would be to say <botname> <state code>
-    #city is too narrow a field, area too broad
-
-#def get all areas and associated states
-    #pull area column of event sheet, and do set list (or just type manually as not that many)
-    #create a dict with [] keys:
-        #temp_dict = {"south":[],"west":[]}
-    #column_ids=[<area id>,<city id>]
-    #sheet = smartsheet.Sheets.get_sheet(sheet_id, column_ids=column_ids)
-    #for row in sheet.row:
-        #temp_dict[row.cells[0]].append(row.cells[1])
-    #area_dict = {}
-    #for key, value in temp_dict:
-        #area_dict[key] = set(value)
-    #return area_dict
-        #should look like: {"south":["TX","AR","NC",etc],"west":["CA","OR",etc]}
-
-#def botprint all areas and associated states(area_dict)
-    #would be the default message when no state is detected
-    #msg = ""
-    #msg += "any static info such as a reminder to add events to smartsheet link"
-    #for key, value in area_dict:
-        #msg += "**{}**  \n".format(key)  #bolded area name
-        #msg += "```  \n {}  \n```".format(value.join(' '))  #join all states in list and separate with space
