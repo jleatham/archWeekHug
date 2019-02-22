@@ -143,9 +143,10 @@ def bot_post_to_room(room_id, message, headers):
 
 def error_handling(response,err_code,user_input,room_id,headers):
     """
-        Random description to be filled out later
-        Just testing branch git control
-        example conflict statement - from josh branch
+        if response is not 200 from webex.  COme here and check error msg
+        Based on error, send user a help msg in their room and send the dev's room
+        the actual error msg.
+        
     """
     error = json.loads(response.text) #converts to type DICT
     #grabs the error response from teams
