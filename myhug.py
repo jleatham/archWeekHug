@@ -142,7 +142,10 @@ def bot_post_to_room(room_id, message, headers):
 
 
 def error_handling(response,err_code,user_input,room_id,headers):
-
+    """
+        Random description to be filled out later
+        Just testing branch git control
+    """
     error = json.loads(response.text) #converts to type DICT
     #grabs the error response from teams
     #Example: {"message":"Unable to post message to room: \"The request payload is too big\"",
