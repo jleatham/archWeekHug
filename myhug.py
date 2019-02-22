@@ -145,6 +145,7 @@ def error_handling(response,err_code,user_input,room_id,headers):
     """
         Random description to be filled out later
         Just testing branch git control
+        example conflict statement - from josh branch
     """
     error = json.loads(response.text) #converts to type DICT
     #grabs the error response from teams
