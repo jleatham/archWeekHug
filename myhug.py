@@ -197,6 +197,9 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
     if event_trigger:
         for i in event_trigger:
             command = command.replace(i,'').strip()
+        for i in arch_filter:
+            command = command.replace(i,'').strip()
+                
         state_list_joined = command
         print("command edit 1: {}".format(state_list_joined))
         state_list_joined = state_list_joined.replace('\xa0','')
@@ -230,13 +233,17 @@ def check_command_for_arch(command_list):
     """
     arch_filter = ['Cross Architecture'] #some arent provided,i.e., '', just don't include for now
     sec_list = ['security','Security','sec','Sec','SEC','SECURITY']
-    dc_list = ['DC','dc','Dc','data center','Data Center','DATA CENTER']
+    dc_list = ['data','DATA','Data','datacenter','DataCenter','Datacenter','DATACENTER'] #can't do DC because it matches washington DC city
+    collab_list = ['collab','Collab','COLLAB','collaboration','Collaboration','COLLABORATION','colab','Colab','COLAB']
     match = list(set(command_list).intersection(sec_list))
     if match:
         arch_filter.append('Security','Cyber Security')    
     match = list(set(command_list).intersection(dc_list))
     if match:
         arch_filter.append('Data Center')   
+    match = list(set(command_list).intersection(collab_list))
+    if match:
+        arch_filter.append('Collaboration')  
 
     if len(arch_filter) <= 1:
         arch_filter = [] #clear out filter as no matches were found
