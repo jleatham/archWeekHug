@@ -238,7 +238,7 @@ def check_command_for_arch(command_list):
     if match:
         arch_filter.append('Data Center')   
 
-    if arch_filter <= 1:
+    if len(arch_filter) <= 1:
         arch_filter = [] #clear out filter as no matches were found
     return arch_filter
 
