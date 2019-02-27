@@ -44,7 +44,7 @@ def hello(body):
         command = (command.replace(TEST_NAME, '')).strip()
         command = (command.replace('@', '')).strip()
         print("stripped command: {}".format(command))
-        process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
+        test_process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
         send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
 
 
@@ -167,3 +167,88 @@ def error_handling(response,err_code,user_input,room_id,headers):
         message = "Looks like we've hit a snag! Sending feedback to the development team."
     bot_post_to_room(room_id,message,headers)
 
+
+
+def test_process_bot_input_command(room_id,command, headers, bot_name):
+    """ 
+        Take the 1st word sent to the bot: check if it is a command
+        If command, process, else, send help message
+        If events trigger:
+            sanitize the command, remove commas, spaces, and bytestrings
+            if 2 digit state code, capitalize it
+            Fetch the data from smartsheets, then search based on input
+            Format the data and send to teams room
+    """
+    ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
+
+    #use set(list).intersection(list2) to more easily compare commands given
+    #for example if any word variation of security is used, append to the arch filter the specific
+    #sec names used in smart sheet: 'Security' and 'Cyber Security'
+    #should probably make this into a seperate function as well and return the arch_filter
+    #match = list(set(command_list).intersection(sec_list))
+    #if match:
+        #arch_filter.append('Security','Cyber Security')
+    #then loop through all different arch variations
+    #once done, send the arch_filter to one of the functions to remove all other architectures
+    event_list = ['events','Events','EVENTS','Event','event','EVENT']
+    command_list = command.split(' ')
+    arch_filter = check_command_for_arch(command_list)
+    event_trigger = list(set(command_list).intersection(event_list))
+    if event_trigger:
+        for i in event_trigger:
+            command = command.replace(i,'').strip()
+        state_list_joined = command
+        print("command edit 1: {}".format(state_list_joined))
+        state_list_joined = state_list_joined.replace('\xa0','')
+        print("command edit 2: {}".format(state_list_joined))        
+        state_list_joined = state_list_joined.replace(',',' ')
+        print("command edit 3: {}".format(state_list_joined))
+        #re.sub('\s+', ' ', mystring).strip() #remove additional whitespace - also a way with re to strip non alpha characters
+        state_list = state_list_joined.split(' ')
+        print("state list: {}".format(str(state_list)))
+        for state in range(len(state_list)):
+            if len(state_list[state]) == 2:
+                state_list[state] = state_list[state].upper()
+        print("Final state list: {}".format(str(state_list)))
+        data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_list,NO_COLUMN_FILTER)
+        if arch_filter:
+            data = filter_data_by_architecture(data, arch_filter)
+        msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS)
+        response = bot_post_to_room(room_id, msg, headers)
+        msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
+        email_filename = generate_email(msg)
+        response = bot_send_email(room_id,email_filename)        
+    else:
+        area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+        msg = format_help_msg(area_dict, bot_name)
+        response = bot_post_to_room(room_id, msg, headers)
+
+def check_command_for_arch(command_list):
+    """
+        Take command and search for posible architecture keywords such as 'security' or 'DC'
+        Return the appropriate keyword used in smartsheets as a list
+    """
+    arch_filter = ['Cross Architecture'] #some arent provided,i.e., '', just don't include for now
+    sec_list = ['security','Security','sec','Sec','SEC','SECURITY']
+    dc_list = ['DC','dc','Dc','data center','Data Center','DATA CENTER']
+    match = list(set(command_list).intersection(sec_list))
+    if match:
+        arch_filter.append('Security','Cyber Security')    
+    match = list(set(command_list).intersection(dc_list))
+    if match:
+        arch_filter.append('Data Center')   
+
+    if arch_filter <= 1:
+        arch_filter = [] #clear out filter as no matches were found
+    return arch_filter
+
+def filter_data_by_architecture(data,arch_filter):
+    """
+        data is in a list of dicts [{'a1':'1','a2':'2'},{'b1':'1','b2':'2'}]
+        remove if not in arch_filter
+    """
+    filtered_data = []
+    for i in data:
+        if i['Architecture'] in arch_filter:
+            filtered_data.append(i)
+    return filtered_data
