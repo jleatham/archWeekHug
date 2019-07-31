@@ -43,8 +43,9 @@ def hello(body):
         command = get_msg_sent_to_bot(text, TEST_HEADERS)
         command = (command.replace(TEST_NAME, '')).strip()
         command = (command.replace('@', '')).strip()
+        command = command.lower()  #added this, don't forget to move to events-bot as well
         print("stripped command: {}".format(command))
-        test_process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
+        test2_process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
         send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
 
 
@@ -249,6 +250,120 @@ def check_command_for_arch(command_list):
         arch_filter = [] #clear out filter as no matches were found
     return arch_filter
 
+
+
+#committing to master
+
+#testing a better command processer
+def test2_process_bot_input_command(room_id,command, headers, bot_name):
+    """ 
+        Provides a few different command options based in different lists. (commands should be lower case)
+        Combines all lists together and checks if any keyword commands are detected...basically a manually created case/switch statement
+        For each possible command, do something
+        Is there an easier way to do this?
+    """
+    ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
+    state_filter = []
+    arch_filter = []
+    mobile_filter = False
+
+    command_list = [
+        ("events",['event','events','-e']),
+        ("mobile",['mobile','phone','-m']),
+        ("filter",['filter','-f'])
+        #("command alias",["list of possible command entries"])
+    ]
+    result = command_parse(command_list,command)
+    ##looks like: {"event":"TX FL AL","filter":"sec dc","mobile":""}
+    if result:
+        if "events" in result:
+            print(f"made it to events:  {result['events']}") 
+            state_filter = process_state_codes(result['events'])
+        if "filter" in result:
+            print(f"made it to filter:  {result['filter']}") 
+            arch_filter = process_arch_filter(result['filter'])           
+        if "mobile" in result:
+            print(f"made it to mobile:  {result['mobile']}") 
+            mobile_filter = True
+                        
+        data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,NO_COLUMN_FILTER)
+        communicate_to_user(ss_client,room_id,headers,data,state_filter,arch_filter,mobile_filter,help=False)
+    else:
+        communicate_to_user(ss_client,room_id,headers,data,state_filter,arch_filter,mobile_filter,help=True)      
+
+
+def command_parse(command_list,command):
+    #potential problem: city name has event / events or mobile or phone in it.  Could search for space or beginning of string to filter that out.
+    """
+        Takes a command_list (list of tuples), as well as a command(string coming from webex)
+        Takes the string and find values in between the commands associated with each command
+        Returns a dict that contains each command found as a key, and the args/values associated
+        {"event":"TX FL AL","filter":"sec dc","mobile":""}
+    """
+    result = {}
+    combined_command_list = []
+    for i in command_list:
+        for x in i[1]:
+            combined_command_list.append(x)
+
+    for i in command_list:
+        command_hash = list(set(combined_command_list).symmetric_difference(i[1]))
+        start_search = "|".join(i[1])
+        end_search = "|".join(command_hash) + "|$"
+        
+        search = re.findall(r'('+start_search+')(.*?)('+end_search+')', command)
+        if search:
+
+            result[i[0]] = sanitize_commands(search[0][1])
+    return result
+
+def sanitize_commands(string):
+    """
+        Could do a lot here but don't right now.  Here is a good article on it:
+        https://www.kdnuggets.com/2018/03/text-data-preprocessing-walkthrough-python.html
+    """
+    string = string.replace('\xa0','') #an artifact from WebEx sometimes
+    string = string.replace(',',' ') #replace commas with spaces
+    return string
+
+def process_state_codes(string):
+    """
+        Goes through string (looks like: "tx fl al"), splits into a list, and capitalizes
+        goes through each and finds the appropriate state for that state code
+        Appends to list and returns
+    """
+    result = []
+    string = string.upper()
+    state_list = string.split(" ")
+    for state in state_list:
+        if state in STATE_CODES:
+            result.append(STATE_CODES[state])
+        else:
+            result.append(state.capitalize())
+    return result 
+
+def process_arch_filter(string):
+    """
+        Take command and search for posible architecture keywords such as 'security' or 'DC'
+        Return the appropriate keyword used in smartsheets as a list
+    """
+    arch_filter = []
+    arch_options = [
+        ("Cross Architecture",["cross","arch"]),
+        ("Security",["sec","security","cyber"]),
+        ("Cyber Security",["sec","security","cyber"]),
+        ("Data Center",["data","dc","datacenter"]),
+        ("Collaboration",["col","collab","collaboration","colab","voice","video","webex","contact","cc","ucce","uccx"])
+        
+    ]
+    arch_list_provided = string.split(" ")
+    for i in arch_list_provided:
+        for y in arch_options:
+            if i in y[1]:
+                arch_filter.append(y[0])
+
+    return arch_filter
+
 def filter_data_by_architecture(data,arch_filter):
     """
         data is in a list of dicts [{'a1':'1','a2':'2'},{'b1':'1','b2':'2'}]
@@ -261,4 +376,57 @@ def filter_data_by_architecture(data,arch_filter):
     return filtered_data
 
 
-#committing to master
+def test_get_all_data_and_filter(ss_client,sheet_id,state,arch_filter,column_filter_list = []):
+    """
+        Sort through smartsheet and grab all data.  Use NO_COLUMN_FILTER to get all data
+        Filter based on states provided, if date is in the future, and not cancelled
+        Sort the data and return as a list of dictionaries, e.g., [{},{}]
+        Each dict contains all columns and their associated value
+    """
+    #grab all smartsheet data and iterate through it
+    sheet = ss_client.Sheets.get_sheet(sheet_id, column_ids=column_filter_list)
+    all_data_list = []
+    for row in sheet.rows:
+        row_dict = {}
+        for cell in row.cells:
+            #map the column id to the column name
+            #map the cell data to the column or '' if null
+            column_title = map_cell_data_to_columnId(sheet.columns, cell)
+            if cell.value:
+                row_dict[column_title] = str(cell.value)
+            else:
+                row_dict[column_title] = ''
+        #if event is virtual or in one of the states specified
+        #AND if not cancelled AND if date is not in the past
+        #then append whole row to the list as a dict
+        if (row_dict['State'] in state or row_dict['Event Type'] == 'Virtual') and (row_dict['Event Status'] == 'Confirmed' and datetime.strptime(row_dict['Event Date'], '%Y-%m-%d') > datetime.now() ):
+            if row_dict['Event Type'] == 'Virtual':
+                row_dict['City'] = 'Virtual'
+            all_data_list.append(row_dict)
+
+    #sort data first by state, then by city, then by Date
+    sorted_data = sorted(all_data_list, key=itemgetter('State','City','Event Date'))
+    #Change date format and return
+    for i in sorted_data:
+        date_obj = datetime.strptime(i['Event Date'], '%Y-%m-%d')
+        i['Event Date'] = datetime.strftime(date_obj, '%b %d, %Y')
+    
+    if arch_filter:
+        sorted_data = filter_data_by_architecture(sorted_data,arch_filter)
+    return sorted_data
+
+def communicate_to_user(ss_client,room_id,headers,data,state_filter,arch_filter,mobile_filter=False,help=False):
+    if not help:
+        if not mobile_filter:
+            state_list_joined = " ".join(state_filter)
+            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS)
+            response = bot_post_to_room(room_id, msg, headers)
+            msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
+            email_filename = generate_email(msg)
+            response = bot_send_email(room_id,email_filename)  
+        else:
+            print("need to figure this out later")
+    else:
+        area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+        msg = format_help_msg(area_dict, bot_name)
+        response = bot_post_to_room(room_id, msg, headers)          
