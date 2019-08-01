@@ -286,7 +286,7 @@ def test2_process_bot_input_command(room_id,command, headers, bot_name):
             print(f"made it to mobile:  {result['mobile']}") 
             mobile_filter = True
                         
-        data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,NO_COLUMN_FILTER)
+        data = test_get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,NO_COLUMN_FILTER)
         communicate_to_user(ss_client,room_id,headers,data,state_filter,arch_filter,mobile_filter,help=False)
     else:
         communicate_to_user(ss_client,room_id,headers,data,state_filter,arch_filter,mobile_filter,help=True)      
