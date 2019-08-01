@@ -267,7 +267,8 @@ def test2_process_bot_input_command(room_id,command, headers, bot_name):
     state_filter = []
     arch_filter = []
     mobile_filter = False
-
+    data = []
+    
     command_list = [
         ("events",['event','events','-e']),
         ("mobile",['mobile','phone','-m']),
