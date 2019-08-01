@@ -289,9 +289,9 @@ def test2_process_bot_input_command(room_id,command, headers, bot_name):
             mobile_filter = True
                         
         data = test_get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,NO_COLUMN_FILTER)
-        communicate_to_user(ss_client,room_id,headers,data,state_filter,arch_filter,mobile_filter,help=False)
+        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,help=False)
     else:
-        communicate_to_user(ss_client,room_id,headers,data,state_filter,arch_filter,mobile_filter,help=True)      
+        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,help=True)      
 
 
 def command_parse(command_list,command):
@@ -417,7 +417,7 @@ def test_get_all_data_and_filter(ss_client,sheet_id,state,arch_filter,column_fil
         sorted_data = filter_data_by_architecture(sorted_data,arch_filter)
     return sorted_data
 
-def communicate_to_user(ss_client,room_id,headers,data,state_filter,arch_filter,mobile_filter=False,help=False):
+def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter=False,help=False):
     if not help:
         if not mobile_filter:
             state_list_joined = " ".join(state_filter)
