@@ -1,19 +1,19 @@
 #removing duplicate keys in python is actually pretty tough.  The text will be read in as
 # a dict and only 1 of the items will remain.
 #to get around this I split up the US and country into two dicts manually, and ran this function:
-    '''
-    new_world = {}
+'''
+new_world = {}
 
-    for key,value in US.items():
-        for k,v in WORLD.items():
-            if key in k:
-                #print(f"{k}  {v}  {key}  {value} ")
-                new_world[k+'X'] = v
-            else:
-                new_world[k] = v
-    for k,v in new_world.items():
-        print(f"'{k}':'{v}',")
-    '''
+for key,value in US.items():
+    for k,v in WORLD.items():
+        if key in k:
+            #print(f"{k}  {v}  {key}  {value} ")
+            new_world[k+'X'] = v
+        else:
+            new_world[k] = v
+for k,v in new_world.items():
+    print(f"'{k}':'{v}',")
+'''
 #It just places an X at the end of duplicate world cities and prioritizes US as that will be primarily used
 
 STATE_CODES = {
