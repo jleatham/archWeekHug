@@ -11,7 +11,7 @@ from botFunctions import ss_get_client, get_all_areas_and_associated_states
 from botFunctions import format_help_msg,get_all_data_and_filter, format_code_print_for_bot
 from botFunctions import generate_html_table_for_bot, map_cell_data_to_columnId
 from botFunctions import generate_email, bot_send_email, send_log_to_ss
-
+from state_codes import STATE_CODES
 
 
 URL = "https://api.ciscospark.com/v1/messages"
