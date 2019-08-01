@@ -1,6 +1,7 @@
 import os
 import sys
 import requests
+import re
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from datetime import datetime
 from operator import itemgetter
