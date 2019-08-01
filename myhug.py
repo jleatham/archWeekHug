@@ -4,6 +4,7 @@ import requests
 import json
 import re
 from datetime import datetime
+from operator import itemgetter
 from botFunctions import TEST_EMAIL, TEST_NAME, EVENT_SMARTSHEET_ID, AREA_COLUMN_FILTER, NO_COLUMN_FILTER
 from botFunctions import EVENTS_EMAIL, EVENTS_NAME
 from botFunctions import CODE_PRINT_COLUMNS, EMAIL_COLUMNS
