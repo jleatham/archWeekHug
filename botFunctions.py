@@ -9,6 +9,7 @@ from email import generator
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smartsheet
+from state_codes import STATE_CODES
 
 
 
@@ -60,7 +61,7 @@ def get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = 
     for area in area_list:
         #temp_dict looks like:  {"south":[],"west":[]}
         temp_dict[area] = []
-    
+
     #second pass, append all states to their associated area and remove duplicates
     for row in sheet.rows:
         temp_dict[str(row.cells[0].value)].append(str(row.cells[1].value))
@@ -70,7 +71,8 @@ def get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = 
     #Looks like: Temp dict items: {'All': ['Nevada', '--', '--', 'District of Columbia (DC)', 'California'],...
     area_dict = {}
     for key, value in temp_dict.items():
-        area_dict[key] = list(set(value))
+        value = process_state_codes(value,reverse=True)
+        area_dict[key] = value
     #print(f"Final area_dict: {area_dict}")
     return area_dict
 
@@ -99,7 +101,7 @@ def format_help_msg(area_dict, bot_name):
     msg = ''.join(msg_list)
     return msg
 
-def get_all_data_and_filter(ss_client,sheet_id,state,column_filter_list = []):
+def get_all_data_and_filter(ss_client,sheet_id,state,arch_filter,column_filter_list = []):
     """
         Sort through smartsheet and grab all data.  Use NO_COLUMN_FILTER to get all data
         Filter based on states provided, if date is in the future, and not cancelled
@@ -133,7 +135,11 @@ def get_all_data_and_filter(ss_client,sheet_id,state,column_filter_list = []):
     for i in sorted_data:
         date_obj = datetime.strptime(i['Event Date'], '%Y-%m-%d')
         i['Event Date'] = datetime.strftime(date_obj, '%b %d, %Y')
+    
+    if arch_filter:
+        sorted_data = filter_data_by_architecture(sorted_data,arch_filter)
     return sorted_data
+
 
 def format_code_print_for_bot(data,state,columns):
     """
@@ -301,3 +307,114 @@ def send_log_to_ss(bot_name,timestamp,identity,command,room_id):
     response = requests.request("POST", url, data=payload, headers=headers)
     responseJson = json.loads(response.text)
     print(str(responseJson))
+
+
+def command_parse(command_list,command):
+    #potential problem: city name has event / events or mobile or phone in it.  Could search for space or beginning of string to filter that out.
+    """
+        Takes a command_list (list of tuples), as well as a command(string coming from webex)
+        Takes the string and find values in between the commands associated with each command
+        Returns a dict that contains each command found as a key, and the args/values associated
+        {"event":"TX FL AL","filter":"sec dc","mobile":""}
+    """
+    result = {}
+    combined_command_list = []
+    for i in command_list:
+        for x in i[1]:
+            combined_command_list.append(x)
+
+    for i in command_list:
+        command_hash = list(set(combined_command_list).symmetric_difference(i[1]))
+        start_search = "|".join(i[1])
+        end_search = "|".join(command_hash) + "|$"
+        
+        search = re.findall(r'('+start_search+')(.*?)('+end_search+')', command)
+        if search:
+
+            result[i[0]] = sanitize_commands(search[0][1])
+    return result
+
+def sanitize_commands(string):
+    """
+        Could do a lot here but don't right now.  Here is a good article on it:
+        https://www.kdnuggets.com/2018/03/text-data-preprocessing-walkthrough-python.html
+    """
+    string = string.replace('\xa0','') #an artifact from WebEx sometimes
+    string = string.replace(',',' ') #replace commas with spaces
+    return string
+
+def process_state_codes(state_list,reverse=False):
+    """
+        Goes through string (looks like: "tx fl al"  ---- or reversed looks like: "Texas Florida Alabama") , splits into a list, and capitalizes
+        goes through each and finds the appropriate state for that state code
+        Appends to list and returns
+    """
+    result = []
+    state_list = list(set(state_list))
+    if not reverse:        
+        for state in state_list:
+            if state in STATE_CODES:
+                result.append(STATE_CODES[state])
+            else:
+                result.append(state.capitalize())
+        
+    else:   
+        for state in state_list:
+            found = next((v for v, k in STATE_CODES.items() if k == state), None)
+            if found:
+                result.append(found)
+            else:
+                result.append(state)
+        
+    return result 
+
+def process_arch_filter(string):
+    """
+        Take command and search for posible architecture keywords such as 'security' or 'DC'
+        Return the appropriate keyword used in smartsheets as a list
+    """
+    arch_filter = []
+    arch_options = [
+        ("Cross Architecture",["cross","arch"]),
+        ("Security",["sec","security","cyber"]),
+        ("Cyber Security",["sec","security","cyber"]),
+        ("Data Center",["data","dc","datacenter"]),
+        ("Collaboration",["col","collab","collaboration","colab","voice","video","webex","contact","cc","ucce","uccx"])
+        
+    ]
+    arch_list_provided = string.split(" ")
+    for i in arch_list_provided:
+        for y in arch_options:
+            if i in y[1]:
+                arch_filter.append(y[0])
+
+    return arch_filter
+
+def filter_data_by_architecture(data,arch_filter):
+    """
+        data is in a list of dicts [{'a1':'1','a2':'2'},{'b1':'1','b2':'2'}]
+        remove if not in arch_filter
+    """
+    filtered_data = []
+    for i in data:
+        if i['Architecture'] in arch_filter:
+            filtered_data.append(i)
+    return filtered_data
+
+
+
+def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter=False,help=False):
+    if not help:
+        if not mobile_filter:
+            state_list_joined = " ".join(state_filter)
+            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS)
+            response = bot_post_to_room(room_id, msg, headers)
+            msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
+            email_filename = generate_email(msg)
+            response = bot_send_email(room_id,email_filename)  
+        else:
+            print("need to figure this out later")
+    else:
+        area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+        msg = format_help_msg(area_dict, bot_name)
+        response = bot_post_to_room(room_id, msg, headers)          
