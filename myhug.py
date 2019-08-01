@@ -280,7 +280,7 @@ def test2_process_bot_input_command(room_id,command, headers, bot_name):
     if result:
         if "events" in result:
             print(f"made it to events:  {result['events']}") 
-            state_filter = process_state_codes(result['events'])
+            state_filter = process_state_codes(result['events'],reverse=False)
         if "filter" in result:
             print(f"made it to filter:  {result['filter']}") 
             arch_filter = process_arch_filter(result['filter'])           
@@ -328,20 +328,34 @@ def sanitize_commands(string):
     string = string.replace(',',' ') #replace commas with spaces
     return string
 
-def process_state_codes(string):
+def process_state_codes(string,reverse=False):
     """
-        Goes through string (looks like: "tx fl al"), splits into a list, and capitalizes
+        Goes through string (looks like: "tx fl al"  ---- or reversed looks like: "Texas Florida Alabama") , splits into a list, and capitalizes
         goes through each and finds the appropriate state for that state code
         Appends to list and returns
     """
     result = []
-    string = string.upper()
-    state_list = string.split(" ")
-    for state in state_list:
-        if state in STATE_CODES:
-            result.append(STATE_CODES[state])
-        else:
-            result.append(state.capitalize())
+    if not reverse:
+        
+        string = string.upper()
+        state_list = string.split(" ")
+        for state in state_list:
+            if state in STATE_CODES:
+                result.append(STATE_CODES[state])
+            else:
+                result.append(state.capitalize())
+        
+    else:
+        state_list = string.split(" ")
+        result = []
+        state_list = list(set(state_list))
+        for state in state_list:
+            found = next((v for v, k in STATE_CODES.items() if k == state), None)
+            if found:
+                result.append(found)
+            else:
+                result.append(state)
+        
     return result 
 
 def process_arch_filter(string):
