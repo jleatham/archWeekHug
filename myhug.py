@@ -13,7 +13,7 @@ from botFunctions import format_help_msg,get_all_data_and_filter, format_code_pr
 from botFunctions import generate_html_table_for_bot, map_cell_data_to_columnId
 from botFunctions import generate_email, bot_send_email, send_log_to_ss
 from state_codes import STATE_CODES
-from botFunctions import test_get_all_areas_and_associated_states #temp until refactoring
+
 
 URL = "https://api.ciscospark.com/v1/messages"
 TEST_HEADERS = {
@@ -441,3 +441,36 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
         area_dict = test_get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
         msg = format_help_msg(area_dict, bot_name)
         response = bot_post_to_room(room_id, msg, headers)          
+
+def test_get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = []):
+    """
+        Sort through smartsheet and grab all Areas and their assosiated State Codes.
+        Output will look like:  {"south":["TX","AR","NC",etc],"west":["CA","OR",etc]}
+        Should update to not hardcode the columns to make function more reusable
+    """
+    #first pass, grab all the areas and put in list, then remove duplicates
+    temp_area_list = []
+    sheet = ss_client.Sheets.get_sheet(sheet_id, column_ids=column_filter_list)    
+    for row in sheet.rows:
+        temp_area_list.append(str(row.cells[0].value))
+    area_list = list(set(temp_area_list))
+
+    #prep data structure
+    temp_dict = {}
+    for area in area_list:
+        #temp_dict looks like:  {"south":[],"west":[]}
+        temp_dict[area] = []
+
+    #second pass, append all states to their associated area and remove duplicates
+    for row in sheet.rows:
+        temp_dict[str(row.cells[0].value)].append(str(row.cells[1].value))
+        #print(f"Data from sheets: key: {str(row.cells[0].value)}  value: {str(row.cells[1].value)}")
+        #Looks like: Data from sheets: key: East  value: Maryland
+    #print(f"Temp dict items: {temp_dict}")
+    #Looks like: Temp dict items: {'All': ['Nevada', '--', '--', 'District of Columbia (DC)', 'California'],...
+    area_dict = {}
+    for key, value in temp_dict.items():
+        value = process_state_codes(value,reverse=True)
+        area_dict[key] = value
+    #print(f"Final area_dict: {area_dict}")
+    return area_dict
