@@ -13,7 +13,7 @@ from botFunctions import format_help_msg,get_all_data_and_filter, format_code_pr
 from botFunctions import generate_html_table_for_bot, map_cell_data_to_columnId
 from botFunctions import generate_email, bot_send_email, send_log_to_ss
 from state_codes import STATE_CODES
-
+from botFunctions import test_get_all_areas_and_associated_states #temp until refactoring
 
 URL = "https://api.ciscospark.com/v1/messages"
 TEST_HEADERS = {
@@ -280,7 +280,7 @@ def test2_process_bot_input_command(room_id,command, headers, bot_name):
     if result:
         if "events" in result:
             print(f"made it to events:  {result['events']}") 
-            state_filter = process_state_codes(result['events'],reverse=False)
+            state_filter = process_state_codes(result['events'].upper().split(" "),reverse=False)
         if "filter" in result:
             print(f"made it to filter:  {result['filter']}") 
             arch_filter = process_arch_filter(result['filter'])           
@@ -328,27 +328,22 @@ def sanitize_commands(string):
     string = string.replace(',',' ') #replace commas with spaces
     return string
 
-def process_state_codes(string,reverse=False):
+def process_state_codes(state_list,reverse=False):
     """
         Goes through string (looks like: "tx fl al"  ---- or reversed looks like: "Texas Florida Alabama") , splits into a list, and capitalizes
         goes through each and finds the appropriate state for that state code
         Appends to list and returns
     """
     result = []
-    if not reverse:
-        
-        string = string.upper()
-        state_list = string.split(" ")
+    state_list = list(set(state_list))
+    if not reverse:        
         for state in state_list:
             if state in STATE_CODES:
                 result.append(STATE_CODES[state])
             else:
                 result.append(state.capitalize())
         
-    else:
-        state_list = string.split(" ")
-        result = []
-        state_list = list(set(state_list))
+    else:   
         for state in state_list:
             found = next((v for v, k in STATE_CODES.items() if k == state), None)
             if found:
@@ -443,6 +438,6 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
         else:
             print("need to figure this out later")
     else:
-        area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+        area_dict = test_get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
         msg = format_help_msg(area_dict, bot_name)
         response = bot_post_to_room(room_id, msg, headers)          
