@@ -137,6 +137,9 @@ def format_code_print_for_bot(data,state,columns):
         Should find a way to pass in column data as a list as opposed to hard coding
     """
     #python string formatting is useful: {:*<n.x} --> * = filler char, (<,>,or ^) = align left,right, or center, n.x = fill for n spaces, cut off after x
+
+    print ("\n")
+    print (data + "\n" + state + "\n" columns + "\n\n")
     msg_list = []
     msg_list.append("**Events for {}**  \n".format(state))
     #msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
