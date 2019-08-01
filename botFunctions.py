@@ -17,10 +17,18 @@ TEST_EMAIL = os.environ['TEST_EMAIL']
 TEST_NAME = os.environ['TEST_NAME']
 EVENTS_EMAIL = os.environ['EVENTS_EMAIL']
 EVENTS_NAME = os.environ['EVENTS_NAME']
-EVENT_SMARTSHEET_ID = "489009441990532"
+#EVENT_SMARTSHEET_ID = "489009441990532"  #FY19
+EVENT_SMARTSHEET_ID = "987451083777924"   #FY20
 EVENT_FORM_URL = "https://app.smartsheet.com/b/form/78ef07e1b4164f56ba8ac1aebd98f8f1"
-event_area_column = "8697203800729476"
-event_state_column = "6985264196282244"
+
+#FY19
+#event_area_column = "8697203800729476"
+#event_state_column = "6985264196282244"
+
+#FY20
+event_area_column = "797193901762436"
+event_state_column = "6426693435975556"
+
 AREA_COLUMN_FILTER = [event_area_column,event_state_column]
 NO_COLUMN_FILTER = []
 CODE_PRINT_COLUMNS = [('Event Name','60'),('State','4'),('City','20'),('Event Date','15'),('Architecture','25'),('Area','10')]
