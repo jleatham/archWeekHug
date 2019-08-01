@@ -138,11 +138,11 @@ def format_code_print_for_bot(data,state,columns):
     """
     #python string formatting is useful: {:*<n.x} --> * = filler char, (<,>,or ^) = align left,right, or center, n.x = fill for n spaces, cut off after x
 
-    print ("\n")
+    print ("\n DATA \n")
     print (data)
-    print ("\n")
+    print ("\n COLUMNS \n")
     print (columns)
-    
+
     msg_list = []
     msg_list.append("**Events for {}**  \n".format(state))
     #msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
