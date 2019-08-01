@@ -63,7 +63,7 @@ def get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = 
     #second pass, append all states to their associated area and remove duplicates
     for row in sheet.rows:
         temp_dict[str(row.cells[0].value)].append(str(row.cells[1].value))
-        print(f"Data from sheets: key: {str(row.cells[0].value)}  value: {str(row.cells[1].value}")
+        print(f"Data from sheets: key: {str(row.cells[0].value)}  value: {str(row.cells[1].value)}")
     print(f"Temp dict items: {temp_dict}")
     area_dict = {}
     for key, value in temp_dict.items():
