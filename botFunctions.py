@@ -136,20 +136,20 @@ def get_all_data_and_filter(ss_client,sheet_id,state,arch_filter,column_filter_l
         #if event is virtual or in one of the states specified
         #AND if not cancelled AND if date is not in the past
         #then append whole row to the list as a dict
-        if (row_dict['State'] in state or row_dict['Event Type'] == 'Virtual') and (row_dict['Event Status'] == 'Confirmed' and datetime.strptime(row_dict['Event Date'], '%Y-%m-%d') > datetime.now() ):
-            if row_dict['Event Type'] == 'Virtual':
-                row_dict['City'] = 'Virtual'
-            all_data_list.append(row_dict)
-
+        try:
+            if (row_dict['State'] in state or row_dict['Event Type'] == 'Virtual') and (row_dict['Event Status'] == 'Confirmed' and datetime.strptime(row_dict['Event Date'], '%Y-%m-%d') > datetime.now() ):
+                if row_dict['Event Type'] == 'Virtual':
+                    row_dict['City'] = 'Virtual'
+                all_data_list.append(row_dict)
+        except Exception as e:
+            print(f"Error in event row:  {e}")
     #sort data first by state, then by city, then by Date
     sorted_data = sorted(all_data_list, key=itemgetter('State','City','Event Date'))
     #Change date format and return
     for i in sorted_data:
-        try:
-            date_obj = datetime.strptime(i['Event Date'], '%Y-%m-%d')
-            i['Event Date'] = datetime.strftime(date_obj, '%b %d, %Y')
-        except Exception as e:
-            print(f"Error (date is blank):  {e}")
+        date_obj = datetime.strptime(i['Event Date'], '%Y-%m-%d')
+        i['Event Date'] = datetime.strftime(date_obj, '%b %d, %Y')
+
     
     if arch_filter:
         sorted_data = filter_data_by_architecture(sorted_data,arch_filter)
