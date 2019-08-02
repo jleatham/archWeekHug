@@ -157,7 +157,7 @@ def get_all_data_and_filter(ss_client,sheet_id,state,arch_filter,column_filter_l
     return sorted_data
 
 
-def format_code_print_for_bot(data,state,columns):
+def format_code_print_for_bot(data,state,columns,msg_break):
     """
         Take pre-sorted data [{},{},{},..] and apply markdown
         Webex does not allow for large data table formatting so code blocks(```) are used as alternative.
@@ -171,25 +171,32 @@ def format_code_print_for_bot(data,state,columns):
     #    print (data)
     #    print ("\n COLUMNS \n")
     #    print (columns)
-
     msg_list = []
-    msg_list.append("**Events for {}**  \n".format(state))
-    #msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
-    #msg_list.append("Have an event to share?  Add it [here]({})  \n```".format(EVENT_FORM_URL))
-    msg_list.append(" \n```")
-    column_str, spacer_str = row_format_for_code_print(columns,header=True)
-    msg_list.append(column_str)
-    msg_list.append(spacer_str)       
-    for row_dict in data:
-        msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
+    if msg_break = True:
+        msg_list.append(" \n```")
+        column_str, spacer_str = row_format_for_code_print(columns,header=True)
+        msg_list.append(column_str)
+        msg_list.append(spacer_str)       
+        for row_dict in data:
+            msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
+    else:
+        msg_list.append("**Events for {}**  \n".format(state))
+        #msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
+        #msg_list.append("Have an event to share?  Add it [here]({})  \n```".format(EVENT_FORM_URL))
+        msg_list.append(" \n```")
+        column_str, spacer_str = row_format_for_code_print(columns,header=True)
+        msg_list.append(column_str)
+        msg_list.append(spacer_str)       
+        for row_dict in data:
+            msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
 
-    msg_list.append("  \n```")
-    msg_list.append("  \n ")
-    msg_list.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
-    msg_list.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
-    msg_list.append("Example:  :: -e TX -f collab  -m  \n") 
-    msg_list.append("Example:  :: events TX mobile   \n") 
-    msg = ''.join(msg_list)
+        msg_list.append("  \n```")
+        msg_list.append("  \n ")
+        msg_list.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
+        msg_list.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
+        msg_list.append("Example:  :: -e TX -f collab  -m  \n") 
+        msg_list.append("Example:  :: events TX mobile   \n") 
+        msg = ''.join(msg_list)
     return msg
 
 def test_format_code_print_for_bot(data,state,columns):
