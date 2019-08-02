@@ -404,3 +404,67 @@ def filter_data_by_architecture(data,arch_filter):
 
 
 
+def format_code_print_for_bot_mobile(data,state,columns):
+    """
+        Take pre-sorted data [{},{},{},..] and apply markdown
+        Webex does not allow for large data table formatting so code blocks(```) are used as alternative.
+        Output is one single long markdown string
+
+        Should find a way to pass in column data as a list as opposed to hard coding
+    """
+    #python string formatting is useful: {:*<n.x} --> * = filler char, (<,>,or ^) = align left,right, or center, n.x = fill for n spaces, cut off after x
+    msg_list = []
+    msg_list.append("##Events for {}##  \n ".format(state))
+    column_str, spacer_str = row_format_for_code_print(columns,header=True)
+    #column_str = string
+ #   msg_list.append(column_str)
+ #   msg_list.append(spacer_str)       
+    for row_dict in data:
+        msg_list.append(row_format_for_code_print_mobile(columns,row_dict=row_dict))
+
+    msg = ''.join(msg_list)
+
+    print (msg_list)
+    return msg
+    #return msg_list
+
+
+
+def row_format_for_code_print_mobile(columns,header=False,row_dict={}):
+    """
+        dymanically creates the table data based on a list of tuples
+        e.g., column = [('Column Name','spacing integer'),(etc)]
+        Columns and row data can be dynamically created from smartsheets if
+        the column names are exact.
+    """
+    str_list = []
+
+    #if printing table header
+    
+    if header == True:
+        for column, space in columns:
+            str_list.append("{c:<{s}} ".format(c=column,s=space))
+                          
+    #else print the table data
+    else:
+        for column, space in columns:
+            if column == "Event Name":
+                str_list.append("**{}** \n ".format(row_dict[column]))
+            elif column == "City":
+                str_list.append(" *  **City:** {} \n".format(row_dict[column]))
+            elif column == "Event Date":
+                str_list.append(" *  **Date:** {} \n".format(row_dict[column]))
+            elif column == "Architecture":
+                str_list.append(" *  **Arch:** {} \n\n".format(row_dict[column]))
+            else:
+               pass
+  #              str_list.append("{c:<{s}} ".format(c=row_dict[column],s=space))
+            
+  #          print (row_dict[column])
+          #  print(str_list)
+    str = ''.join(str_list)
+    if header == True: 
+        spacer_str =  "{:*<{s}}".format('  \n*',s=len(str))
+        return str, spacer_str 
+    else:
+        return str
