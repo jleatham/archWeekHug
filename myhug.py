@@ -232,7 +232,7 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
                 sub_data_a = data[:40]
                 msg = format_code_print_for_bot(sub_data_a,state_list_joined,CODE_PRINT_COLUMNS)
                 response = bot_post_to_room(room_id, msg, headers)
-                sub_data_a = data[40:]
+                sub_data_b = data[40:]
                 msg = format_code_print_for_bot(sub_data_b,state_list_joined,CODE_PRINT_COLUMNS)
                 response = bot_post_to_room(room_id, msg, headers)
             else:
