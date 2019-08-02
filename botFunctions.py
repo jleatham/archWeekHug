@@ -492,7 +492,7 @@ def row_format_for_code_print_mobile(columns,header=False,row_dict={}):
                 str_list.append("  •  **Arch:** {}  \n".format(row_dict[column]))
             elif column == "Informational Link":
                 if row_dict[column] == "":
-                    pass
+                    str_list.append("\n")
                 else:
                     str_list.append("  •  **URL:** [Link]({})  \n\n".format(row_dict[column]))
             else:
