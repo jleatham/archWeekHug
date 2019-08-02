@@ -145,8 +145,11 @@ def get_all_data_and_filter(ss_client,sheet_id,state,arch_filter,column_filter_l
     sorted_data = sorted(all_data_list, key=itemgetter('State','City','Event Date'))
     #Change date format and return
     for i in sorted_data:
-        date_obj = datetime.strptime(i['Event Date'], '%Y-%m-%d')
-        i['Event Date'] = datetime.strftime(date_obj, '%b %d, %Y')
+        try:
+            date_obj = datetime.strptime(i['Event Date'], '%Y-%m-%d')
+            i['Event Date'] = datetime.strftime(date_obj, '%b %d, %Y')
+        except Exception as e:
+            print(f"Error (date is blank):  {e}")
     
     if arch_filter:
         sorted_data = filter_data_by_architecture(sorted_data,arch_filter)
@@ -447,7 +450,7 @@ def format_code_print_for_bot_mobile(data,state,columns):
     msg_list.append("##Events for {}##  \n ".format(state))
     column_str, spacer_str = row_format_for_code_print(columns,header=True)
     #column_str = string
- #   msg_list.append(column_str)
+ #   msg_list.append(column_str) 
  #   msg_list.append(spacer_str)       
     for row_dict in data:
         msg_list.append(row_format_for_code_print_mobile(columns,row_dict=row_dict))
