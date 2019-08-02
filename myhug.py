@@ -186,6 +186,7 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
             response = bot_send_email(room_id,email_filename)  
         else:
             print("need to figure this out later")
+            state_list_joined = " ".join(state_filter)
             msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS)
             response = bot_post_to_room(room_id, msg, headers)
     else:
