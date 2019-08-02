@@ -167,10 +167,28 @@ def format_code_print_for_bot(data,state,columns,msg_break):
     """
     #python string formatting is useful: {:*<n.x} --> * = filler char, (<,>,or ^) = align left,right, or center, n.x = fill for n spaces, cut off after x
 
-    #    print ("\n DATA \n")
-    #    print (data)
-    #    print ("\n COLUMNS \n")
-    #    print (columns)
+    #ATTEMPT AT MULTI-PRINT
+    #msg_list = []
+    #if msg_flag == "start":
+        #msg_list.append("**Events for {}**  \n".format(state))
+        #msg = ''.join(msg_list)
+    #elif msg_flag == "data":
+        #msg_list.append(" \n```")
+        #column_str, spacer_str = row_format_for_code_print(columns,header=True)
+        #msg_list.append(column_str)
+        #msg_list.append(spacer_str)       
+        #for row_dict in data:
+            #msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
+        #msg_list.append(" \n```")
+        #msg = ''.join(msg_list)
+    #elif msg_flag == "end":
+        #msg_list.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
+        #msg_list.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
+        #msg_list.append("Example:  :: -e TX -f collab  -m  \n") 
+        #msg_list.append("Example:  :: events TX mobile   \n") 
+        #msg = ''.join(msg_list)
+    #return msg
+
     msg_list = []
     if msg_break:
         msg_list.append(" \n```")
