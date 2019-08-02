@@ -494,7 +494,7 @@ def row_format_for_code_print_mobile(columns,header=False,row_dict={}):
                 if row_dict[column] == "":
                     str_list.append("\n")
                 else:
-                    str_list.append("  •  **URL:** [Link]({})  \n\n".format(row_dict[column]))
+                    str_list.append("  •  **Reg:** [Link]({})  \n\n".format(row_dict[column]))
             else:
                pass
   #              str_list.append("{c:<{s}} ".format(c=row_dict[column],s=space))
