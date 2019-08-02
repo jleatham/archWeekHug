@@ -451,7 +451,7 @@ def row_format_for_code_print_mobile(columns,header=False,row_dict={}):
     else:
         for column, space in columns:
             if column == "Event Name":
-                str_list.append("**{}** \n ".format(row_dict[column]))
+                str_list.append("***{}*** \n ".format(row_dict[column]))
             elif column == "City":
                 str_list.append(" *  **City:** {} \n".format(row_dict[column]))
             elif column == "Event Date":
