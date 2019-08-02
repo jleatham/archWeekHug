@@ -86,19 +86,30 @@ def format_help_msg(area_dict, bot_name):
         The markdown is also joined to a single string and returned to be printed
     """
     msg_list = []
-    msg_list.append("``` \n")
-    msg_list.append("Select State code from below\n\n")
-    #add if else for whether bot is in space or 1 on 1.  No need for @ if 1 on 1
-    msg_list.append("Example:  @{} events TX  \n".format(bot_name))
-    msg_list.append("Example:  @{} events CA NV WA  \n".format(bot_name))
-    msg_list.append("Remove the @{} when not in multi-user space (i.e., 1 on 1)  \n\n".format(bot_name))
+    
+
+    
+    msg_list.append("``` \n\n")
     msg_list.append("{:<15}: {}  \n".format('Area', 'State Codes'))
     msg_list.append("{:*<15}: {:*<60}  \n".format('', ''))
     for area, states in area_dict.items():
         msg_list.append("{:<15}: {}  \n".format(area, ' , '.join(states)))
-    msg_list.append("  \nCreated by TBD - Team Bot Developers")
+    msg_list.append("  \nCreated by:")
     msg_list.append("  \nMinh Nguyen (minhngu2) and Josh Leatham (jleatham) from Commercial South Area")
-    msg_list.append("  \n```")
+    msg_list.append("  \n```\n\n")
+    msg_list.append("Commands for bot:\n")
+    msg_list.append("Commands structure: {events} _____ {filter} ______ {mobile} \n")
+    msg_list.append("events|-e --> state_code\n")
+    msg_list.append("filter|-f --> architectures you want to see\n")
+    msg_list.append("mobile|-m --> formats events to display on mobile\n")
+    msg_list.append("Select State code from above\n")
+    #add if else for whether bot is in space or 1 on 1.  No need for @ if 1 on 1
+    msg_list.append("Remove the @{} when not in multi-user space (i.e., 1 on 1)  \n".format(bot_name))
+    msg_list.append("Example:  @{} **events TX**  \n".format(bot_name))
+    msg_list.append("Example:  @{} **events CA NV WA**  \n".format(bot_name))    
+    msg_list.append("Example:  @{} events CA NV WA filter sec  \n".format(bot_name))   
+    msg_list.append("Example:  @{} -e TX -f collab  \n".format(bot_name)) 
+    msg_list.append("Example:  @{} -events TX mobile  \n".format(bot_name)) 
     msg = ''.join(msg_list)
     return msg
 
@@ -160,7 +171,8 @@ def format_code_print_for_bot(data,state,columns):
     msg_list = []
     msg_list.append("**Events for {}**  \n".format(state))
     #msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
-    msg_list.append("Have an event to share?  Add it [here]({})  \n```".format(EVENT_FORM_URL))
+    #msg_list.append("Have an event to share?  Add it [here]({})  \n```".format(EVENT_FORM_URL))
+    msg_list.append(" \n```")
     column_str, spacer_str = row_format_for_code_print(columns,header=True)
     msg_list.append(column_str)
     msg_list.append(spacer_str)       
@@ -168,6 +180,11 @@ def format_code_print_for_bot(data,state,columns):
         msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
 
     msg_list.append("  \n```")
+    msg_list.append(" \n ")
+    msg_list.append("Commands structure: {events} _____ {filter} ______ {mobile} \n")
+    msg_list.append("Example:  @{} events CA NV WA filter sec dc mobile  \n".format(bot_name))   
+    msg_list.append("Example:  @{} -e TX -f collab  -m \n".format(bot_name)) 
+    msg_list.append("Example:  @{} -events TX mobile  \n".format(bot_name)) 
     msg = ''.join(msg_list)
     return msg
 
@@ -328,7 +345,17 @@ def command_parse(command_list,command):
         command_hash = list(set(combined_command_list).symmetric_difference(i[1]))
         start_search = "|".join(i[1])
         end_search = "|".join(command_hash) + "|$"
-        
+        #'(event|events|-e)(.*?)(-f|filter|-m|mobile)'
+        #3 search groups in ()... interested in the second
+        #when the command events is typed, regex will find event, strip the s, and put it as an arg...bug
+        #I think that can be fixed by checking to make sure there is a space afterwards, but then what about
+        #typing -m at the end of command, there won't be a space afterwards, and as this for loop progresses it
+        #will place the -m at the start_search location. It won't detect it.  It will see the -m, it will see the 
+        # end of string($), but it won't detect because the match because it would expect a -m_ with a space
+        #I think I will just fix this in the sanitize command function by getting rid of single characters
+        #
+        #or i could just hard code a solution and strip S out of any result as I would never need it.  or likewise
+        #just replace events with event before string goes through regex.
         search = re.findall(r'('+start_search+')(.*?)('+end_search+')', command)
         if search:
 
@@ -342,6 +369,7 @@ def sanitize_commands(string):
     """
     string = string.replace('\xa0','') #an artifact from WebEx sometimes
     string = string.replace(',',' ') #replace commas with spaces
+    string = ' '.join([w for w in string.split() if len(w)>1]) #remove all characters of length of 1
     return string
 
 def process_state_codes(state_list,reverse=False):
