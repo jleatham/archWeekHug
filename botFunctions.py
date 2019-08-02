@@ -190,12 +190,12 @@ def format_code_print_for_bot(data,state,columns,msg_break):
         for row_dict in data:
             msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
 
-        msg_list.append("  \n```")
-        msg_list.append("  \n ")
-        msg_list.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
-        msg_list.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
-        msg_list.append("Example:  :: -e TX -f collab  -m  \n") 
-        msg_list.append("Example:  :: events TX mobile   \n") 
+    msg_list.append("  \n```")
+    msg_list.append("  \n ")
+    msg_list.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
+    msg_list.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
+    msg_list.append("Example:  :: -e TX -f collab  -m  \n") 
+    msg_list.append("Example:  :: events TX mobile   \n") 
     msg = ''.join(msg_list)
     return msg
 
