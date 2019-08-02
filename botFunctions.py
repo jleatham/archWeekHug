@@ -35,6 +35,7 @@ event_state_column = "6426693435975556"
 AREA_COLUMN_FILTER = [event_area_column,event_state_column]
 NO_COLUMN_FILTER = []
 CODE_PRINT_COLUMNS = [('Event Name','60'),('State','4'),('City','20'),('Event Date','15'),('Architecture','25'),('Area','10')]
+CODE_PRINT_COLUMNS_MOBILE = [('Event Name', '60'), ('State', '4'), ('City', '20'), ('Event Date', '15'), ('Architecture', '25'), ('Informational Link', '10'),('Area', '10')]
 EMAIL_COLUMNS = [('Event Name','60'),('Informational Link','1'),('Architecture','5'),('State','5'),('City','10'),('Event Date','20'),('Event Lead','1')]
 
 def ss_get_client(SMARTSHEET_TOKEN):
@@ -488,9 +489,12 @@ def row_format_for_code_print_mobile(columns,header=False,row_dict={}):
             elif column == "Event Date":
                 str_list.append("  •  **Date:** {}  \n".format(row_dict[column]))
             elif column == "Architecture":
-                str_list.append("  •  **Arch:** {}  \n\n".format(row_dict[column]))
+                str_list.append("  •  **Arch:** {}  \n".format(row_dict[column]))
             elif column == "Informational Link":
-                str_list.append("  •  **URL:** [Link]({})  \n\n".format(row_dict[column]))
+                if row_dict[column] == "":
+                    str_list.append("\n")
+                else:
+                    str_list.append("  •  **URL:** [Link]({})  \n\n".format(row_dict[column]))
             else:
                pass
   #              str_list.append("{c:<{s}} ".format(c=row_dict[column],s=space))
