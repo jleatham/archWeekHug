@@ -426,7 +426,7 @@ def format_code_print_for_bot_mobile(data,state,columns):
 
     msg = ''.join(msg_list)
 
-    print (msg_list)
+    #print (msg_list)
     return msg
     #return msg_list
 
