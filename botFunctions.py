@@ -182,9 +182,9 @@ def format_code_print_for_bot(data,state,columns):
     msg_list.append("  \n```")
     msg_list.append(" \n ")
     msg_list.append("Commands structure: {events} _____ {filter} ______ {mobile} \n")
-    msg_list.append("Example:  @{} events CA NV WA filter sec dc mobile  \n".format(bot_name))   
-    msg_list.append("Example:  @{} -e TX -f collab  -m \n".format(bot_name)) 
-    msg_list.append("Example:  @{} -events TX mobile  \n".format(bot_name)) 
+    msg_list.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
+    msg_list.append("Example:  :: -e TX -f collab  -m \n") 
+    msg_list.append("Example:  :: -events TX mobile  \n") 
     msg = ''.join(msg_list)
     return msg
 
