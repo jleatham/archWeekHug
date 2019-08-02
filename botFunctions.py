@@ -172,7 +172,7 @@ def format_code_print_for_bot(data,state,columns,msg_break):
     #    print ("\n COLUMNS \n")
     #    print (columns)
     msg_list = []
-    if msg_break = True:
+    if msg_break:
         msg_list.append(" \n```")
         column_str, spacer_str = row_format_for_code_print(columns,header=True)
         msg_list.append(column_str)
