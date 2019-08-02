@@ -180,9 +180,9 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
         if not mobile_filter:
             state_list_joined = " ".join(state_filter)
             msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS)
-            print ("\n")
+            print ("\n\n\n Printing MSG")
             print (msg)
-            print ("\n")
+            print ("\n\n\n")
             response = bot_post_to_room(room_id, msg, headers)
             msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
             email_filename = generate_email(msg)
