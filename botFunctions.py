@@ -482,17 +482,19 @@ def row_format_for_code_print_mobile(columns,header=False,row_dict={}):
     else:
         for column, space in columns:
             if column == "Event Name":
-                str_list.append("***{}*** \n ".format(row_dict[column]))
+                str_list.append("***{}***  \n ".format(row_dict[column]))
             elif column == "City":
-                str_list.append(" *  **City:** {} \n".format(row_dict[column]))
+                str_list.append("  •  **City:** {}  \n".format(row_dict[column]))
             elif column == "Event Date":
-                str_list.append(" *  **Date:** {} \n".format(row_dict[column]))
+                str_list.append("  •  **Date:** {}  \n".format(row_dict[column]))
             elif column == "Architecture":
-                str_list.append(" *  **Arch:** {} \n\n".format(row_dict[column]))
+                str_list.append("  •  **Arch:** {}  \n\n".format(row_dict[column]))
+            elif column == "Informational Link":
+                str_list.append("  •  **URL:** [Link]({})  \n\n".format(row_dict[column]))
             else:
                pass
   #              str_list.append("{c:<{s}} ".format(c=row_dict[column],s=space))
-            
+    #msg_list.append("Have an event to share?  Add it [here]({})  \n```".format(EVENT_FORM_URL))
   #          print (row_dict[column])
           #  print(str_list)
     str = ''.join(str_list)
