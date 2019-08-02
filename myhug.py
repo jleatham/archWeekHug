@@ -7,7 +7,7 @@ from datetime import datetime
 from operator import itemgetter
 from botFunctions import TEST_EMAIL, TEST_NAME, EVENT_SMARTSHEET_ID, AREA_COLUMN_FILTER, NO_COLUMN_FILTER
 from botFunctions import EVENTS_EMAIL, EVENTS_NAME
-from botFunctions import CODE_PRINT_COLUMNS, EMAIL_COLUMNS
+from botFunctions import CODE_PRINT_COLUMNS, EMAIL_COLUMNS,CODE_PRINT_COLUMNS_MOBILE
 from botFunctions import ss_get_client, get_all_areas_and_associated_states
 from botFunctions import format_help_msg,get_all_data_and_filter, format_code_print_for_bot, format_code_print_for_bot_mobile
 from botFunctions import generate_html_table_for_bot, map_cell_data_to_columnId
@@ -187,7 +187,7 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
         else:
             print("need to figure this out later")
             state_list_joined = " ".join(state_filter)
-            msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS)
+            msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE)
             response = bot_post_to_room(room_id, msg, headers)
     else:
         area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
