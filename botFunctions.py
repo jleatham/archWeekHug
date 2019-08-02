@@ -35,6 +35,7 @@ event_state_column = "6426693435975556"
 AREA_COLUMN_FILTER = [event_area_column,event_state_column]
 NO_COLUMN_FILTER = []
 CODE_PRINT_COLUMNS = [('Event Name','60'),('State','4'),('City','20'),('Event Date','15'),('Architecture','25'),('Area','10')]
+CODE_PRINT_COLUMNS_MOBILE = [('Event Name', '60'), ('State', '4'), ('City', '20'), ('Event Date', '15'), ('Architecture', '25'), ('Informational Link', '10'),('Area', '10')]
 EMAIL_COLUMNS = [('Event Name','60'),('Informational Link','1'),('Architecture','5'),('State','5'),('City','10'),('Event Date','20'),('Event Lead','1')]
 
 def ss_get_client(SMARTSHEET_TOKEN):
