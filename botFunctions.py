@@ -481,11 +481,11 @@ def row_format_for_code_print_mobile(columns,header=False,row_dict={}):
             if column == "Event Name":
                 str_list.append("***{}*** \n ".format(row_dict[column]))
             elif column == "City":
-                str_list.append(" *  **City:** {} \n".format(row_dict[column]))
+                str_list.append(" •  **City:** {} \n".format(row_dict[column]))
             elif column == "Event Date":
-                str_list.append(" *  **Date:** {} \n".format(row_dict[column]))
+                str_list.append(" •  **Date:** {} \n".format(row_dict[column]))
             elif column == "Architecture":
-                str_list.append(" *  **Arch:** {} \n\n".format(row_dict[column]))
+                str_list.append(" •  **Arch:** {} \n\n".format(row_dict[column]))
             else:
                pass
   #              str_list.append("{c:<{s}} ".format(c=row_dict[column],s=space))
