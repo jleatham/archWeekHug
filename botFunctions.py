@@ -412,6 +412,8 @@ def format_code_print_for_bot_mobile(data,state,columns):
 
         Should find a way to pass in column data as a list as opposed to hard coding
     """
+    print ("\n")
+    print ("*** Entering Mobile Print ***")
     #python string formatting is useful: {:*<n.x} --> * = filler char, (<,>,or ^) = align left,right, or center, n.x = fill for n spaces, cut off after x
     msg_list = []
     msg_list.append("##Events for {}##  \n ".format(state))
