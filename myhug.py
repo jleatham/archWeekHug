@@ -13,7 +13,7 @@ from botFunctions import format_help_msg,get_all_data_and_filter, format_code_pr
 from botFunctions import generate_html_table_for_bot, map_cell_data_to_columnId
 from botFunctions import generate_email, bot_send_email, send_log_to_ss
 from botFunctions import command_parse, sanitize_commands, process_state_codes, process_arch_filter, filter_data_by_architecture
-
+from botFunctions import test_format_code_print_for_bot #remove after testing
 
 
 
@@ -48,7 +48,7 @@ def hello(body):
         command = (command.replace('@', '')).strip()
         command = command.lower()  #added this, don't forget to move to events-bot as well
         print("stripped command: {}".format(command))
-        process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
+        test_process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
         send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
 
 
@@ -119,6 +119,42 @@ def process_bot_input_command(room_id,command, headers, bot_name):
     else:
         communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,help=True)      
 
+def test_process_bot_input_command(room_id,command, headers, bot_name):
+    """ 
+        Provides a few different command options based in different lists. (commands should be lower case)
+        Combines all lists together and checks if any keyword commands are detected...basically a manually created case/switch statement
+        For each possible command, do something
+        Is there an easier way to do this?
+    """
+    ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
+    state_filter = []
+    arch_filter = []
+    mobile_filter = False
+    data = []
+    
+    command_list = [
+        ("events",['event','events','-e']),
+        ("mobile",['mobile','phone','-m']),
+        ("filter",['filter','-f'])
+        #("command alias",["list of possible command entries"])
+    ]
+    result = command_parse(command_list,command)
+    ##looks like: {"event":"TX FL AL","filter":"sec dc","mobile":""}
+    if result:
+        if "events" in result:
+            print(f"made it to events:  {result['events']}") 
+            state_filter = process_state_codes(result['events'].upper().split(" "),reverse=False)
+        if "filter" in result:
+            print(f"made it to filter:  {result['filter']}") 
+            arch_filter = process_arch_filter(result['filter'])           
+        if "mobile" in result:
+            print(f"made it to mobile:  {result['mobile']}") 
+            mobile_filter = True
+                        
+        data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,NO_COLUMN_FILTER)
+        test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,help=False)
+    else:
+        test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,help=True)      
 
 
 
@@ -145,6 +181,18 @@ def bot_post_to_room(room_id, message, headers):
         #send to the DEVs bot room
         error_handling(response,response.status_code,user_input,room_id,headers)
 
+def test_bot_post_to_room(room_id, message_list, headers):
+    for message in message_list:
+        print(f"msg byte size(UTF-8): {len(message.encode('utf-8'))} bytes")
+        #try to post
+        payload = {"roomId": room_id,"markdown": message}
+        response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
+        #error handling
+        if response.status_code != 200:
+            #modify function to receive user_input as well so we can pass through
+            user_input = "some test message for the moment"
+            #send to the DEVs bot room
+            error_handling(response,response.status_code,user_input,room_id,headers)
 
       
 
@@ -168,7 +216,7 @@ def error_handling(response,err_code,user_input,room_id,headers):
     
     #need to add error handling here
     #if XYZ in response.text then, etc
-    search_obj = re.search(r'7439',error["message"])
+    search_obj = re.search(r'7439|big',error["message"])
     if search_obj:
         message = "Too many results for Teams output, sending email instead:"
     else:
@@ -195,6 +243,24 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
         msg = format_help_msg(area_dict, bot_name)
         response = bot_post_to_room(room_id, msg, headers)          
 
+def test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter=False,help=False):
+    if not help:
+        if not mobile_filter:
+            state_list_joined = " ".join(state_filter)
+            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS)
+            response = test_bot_post_to_room(room_id, msg, headers)
+            msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
+            email_filename = generate_email(msg)
+            response = bot_send_email(room_id,email_filename)  
+        else:
+            print("need to figure this out later")
+            state_list_joined = " ".join(state_filter)
+            msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE)
+            response = test_bot_post_to_room(room_id, msg, headers)
+    else:
+        area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+        msg = format_help_msg(area_dict, bot_name)
+        response = test_bot_post_to_room(room_id, msg, headers)          
 
 
 

@@ -167,10 +167,10 @@ def format_code_print_for_bot(data,state,columns):
     """
     #python string formatting is useful: {:*<n.x} --> * = filler char, (<,>,or ^) = align left,right, or center, n.x = fill for n spaces, cut off after x
 
-#    print ("\n DATA \n")
-#    print (data)
-#    print ("\n COLUMNS \n")
-#    print (columns)
+    #    print ("\n DATA \n")
+    #    print (data)
+    #    print ("\n COLUMNS \n")
+    #    print (columns)
 
     msg_list = []
     msg_list.append("**Events for {}**  \n".format(state))
@@ -191,6 +191,70 @@ def format_code_print_for_bot(data,state,columns):
     msg_list.append("Example:  :: events TX mobile   \n") 
     msg = ''.join(msg_list)
     return msg
+
+def test_format_code_print_for_bot(data,state,columns):
+    """
+        Take pre-sorted data [{},{},{},..] and apply markdown
+        Webex does not allow for large data table formatting so code blocks(```) are used as alternative.
+        Output is one single long markdown string
+
+        Should find a way to pass in column data as a list as opposed to hard coding
+    """
+    #python string formatting is useful: {:*<n.x} --> * = filler char, (<,>,or ^) = align left,right, or center, n.x = fill for n spaces, cut off after x
+
+    #    print ("\n DATA \n")
+    #    print (data)
+    #    print ("\n COLUMNS \n")
+    #    print (columns)
+    msgs_to_send = []
+    start_msg = []
+    end_msg = []
+    data_msg = []
+    start_msg.append("**Events for {}**  \n".format(state))
+    #start_msg.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
+    #start_msg.append("Have an event to share?  Add it [here]({})  \n```".format(EVENT_FORM_URL))
+    msgs_to_send.append(''.join(start_msg))
+    
+
+
+    data_msg.append(" \n```")
+    column_str, spacer_str = row_format_for_code_print(columns,header=True)
+    data_msg.append(column_str)
+    data_msg.append(spacer_str)       
+    for row_dict in data:
+        data_msg.append(row_format_for_code_print(columns,row_dict=row_dict))
+    data_msg.append("  \n```")
+    
+    if len("".join(start_msg).encode('utf-8')) + len("".join(data).encode('utf-8')) > 7000:
+        data_msg = []
+        data_msg.append("  \n```")
+        data_msg.append(column_str)
+        data_msg.append(spacer_str)     
+        for i in range(0, int(len(data)/2)):
+            row_dict = data[i]
+            data_msg.append(row_format_for_code_print(columns,row_dict=row_dict))
+        data_msg.append("  \n```")
+        msgs_to_send.append(''.join(data_msg))
+        data_msg = []
+        data_msg.append("  \n```")
+        data_msg.append(column_str)
+        data_msg.append(spacer_str)          
+        for i in range(int(len(data)/2), len(data)):
+            row_dict = data[i]
+            data_msg.append(row_format_for_code_print(columns,row_dict=row_dict))
+        data_msg.append("  \n```")
+        msgs_to_send.append(''.join(data_msg))
+    else:
+        msgs_to_send.append(''.join(data_msg))
+
+    end_msg.append("  \n ")
+    end_msg.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
+    end_msg.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
+    end_msg.append("Example:  :: -e TX -f collab  -m  \n") 
+    end_msg.append("Example:  :: events TX mobile   \n")     
+    msgs_to_send.append(''.join(end_msg))
+
+    return msgs_to_send
 
 
 def row_format_for_code_print(columns,header=False,row_dict={}):
