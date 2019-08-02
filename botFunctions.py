@@ -521,7 +521,9 @@ def format_code_print_for_bot_mobile(data,state,columns):
         msg_list.append(row_format_for_code_print_mobile(columns,row_dict=row_dict))
 
     msg = ''.join(msg_list)
-
+    print ("\n\n *** Broken Data ***")
+    print (len(data))
+    print ("\n\n")
     #print (msg_list)
     return msg
     #return msg_list
