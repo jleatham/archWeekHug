@@ -489,9 +489,12 @@ def row_format_for_code_print_mobile(columns,header=False,row_dict={}):
             elif column == "Event Date":
                 str_list.append("  •  **Date:** {}  \n".format(row_dict[column]))
             elif column == "Architecture":
-                str_list.append("  •  **Arch:** {}  \n\n".format(row_dict[column]))
+                str_list.append("  •  **Arch:** {}  \n".format(row_dict[column]))
             elif column == "Informational Link":
-                str_list.append("  •  **URL:** [Link]({})  \n\n".format(row_dict[column]))
+                if row_dict[column] == "":
+                    pass
+                else:
+                    str_list.append("  •  **URL:** [Link]({})  \n\n".format(row_dict[column]))
             else:
                pass
   #              str_list.append("{c:<{s}} ".format(c=row_dict[column],s=space))
