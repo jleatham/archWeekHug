@@ -48,7 +48,7 @@ def hello(body):
         command = (command.replace('@', '')).strip()
         command = command.lower()  #added this, don't forget to move to events-bot as well
         print("stripped command: {}".format(command))
-        test_process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
+        process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
         send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
 
 
