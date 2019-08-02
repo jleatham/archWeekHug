@@ -9,7 +9,7 @@ from botFunctions import TEST_EMAIL, TEST_NAME, EVENT_SMARTSHEET_ID, AREA_COLUMN
 from botFunctions import EVENTS_EMAIL, EVENTS_NAME
 from botFunctions import CODE_PRINT_COLUMNS, EMAIL_COLUMNS
 from botFunctions import ss_get_client, get_all_areas_and_associated_states
-from botFunctions import format_help_msg,get_all_data_and_filter, format_code_print_for_bot
+from botFunctions import format_help_msg,get_all_data_and_filter, format_code_print_for_bot, format_code_print_for_bot_mobile
 from botFunctions import generate_html_table_for_bot, map_cell_data_to_columnId
 from botFunctions import generate_email, bot_send_email, send_log_to_ss
 from botFunctions import command_parse, sanitize_commands, process_state_codes, process_arch_filter, filter_data_by_architecture
@@ -186,6 +186,9 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
             response = bot_send_email(room_id,email_filename)  
         else:
             print("need to figure this out later")
+            state_list_joined = " ".join(state_filter)
+            msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS)
+            response = bot_post_to_room(room_id, msg, headers)
     else:
         area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
         msg = format_help_msg(area_dict, bot_name)
