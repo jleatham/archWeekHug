@@ -230,25 +230,25 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
             state_list_joined = " ".join(state_filter)
 
             #ATTEMPT AT MULTI-PRINT
-            #msg = format_code_print_for_bot(sub_data_a,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="start")
-            #response = bot_post_to_room(room_id, msg, headers)
-            #n = 50 #how large the data chunk to print
-            #for i in range(0, len(data), n):
-                #data_chunk = data[i:i + n]
-                #msg = format_code_print_for_bot(sub_data_chunk,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="data")
-                #response = bot_post_to_room(room_id, msg, headers)   
-            #msg = format_code_print_for_bot(sub_data_a,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="end")
-            #response = bot_post_to_room(room_id, msg, headers)                         
-            if len(data) >=50:
-                sub_data_a = data[:40]
-                msg = format_code_print_for_bot(sub_data_a,state_list_joined,CODE_PRINT_COLUMNS,msg_break=False)
-                response = bot_post_to_room(room_id, msg, headers)
-                sub_data_b = data[40:]
-                msg = format_code_print_for_bot(sub_data_b,state_list_joined,CODE_PRINT_COLUMNS,msg_break=True)
-                response = bot_post_to_room(room_id, msg, headers)
-            else:
-                msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_break=False)
-                response = bot_post_to_room(room_id, msg, headers)
+            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="start")
+            response = bot_post_to_room(room_id, msg, headers)
+            n = 40 #how large the data chunk to print
+            for i in range(0, len(data), n):
+                data_chunk = data[i:i + n]
+                msg = format_code_print_for_bot(data_chunk,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="data")
+                response = bot_post_to_room(room_id, msg, headers)   
+            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="end")
+            response = bot_post_to_room(room_id, msg, headers)                         
+#            if len(data) >=50:
+#                sub_data_a = data[:40]
+#                msg = format_code_print_for_bot(sub_data_a,state_list_joined,CODE_PRINT_COLUMNS,msg_flag=False)
+#                response = bot_post_to_room(room_id, msg, headers)
+#                sub_data_b = data[40:]
+#                msg = format_code_print_for_bot(sub_data_b,state_list_joined,CODE_PRINT_COLUMNS,msg_flag=True)
+#                response = bot_post_to_room(room_id, msg, headers)
+#            else:
+#                msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag=False)
+#                response = bot_post_to_room(room_id, msg, headers)
 
  #           msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS)
  #           response = bot_post_to_room(room_id, msg, headers)

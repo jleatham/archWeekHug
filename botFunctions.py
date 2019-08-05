@@ -157,7 +157,7 @@ def get_all_data_and_filter(ss_client,sheet_id,state,arch_filter,column_filter_l
     return sorted_data
 
 
-def format_code_print_for_bot(data,state,columns,msg_break):
+def format_code_print_for_bot(data,state,columns,msg_flag):
     """
         Take pre-sorted data [{},{},{},..] and apply markdown
         Webex does not allow for large data table formatting so code blocks(```) are used as alternative.
@@ -167,53 +167,33 @@ def format_code_print_for_bot(data,state,columns,msg_break):
     """
     #python string formatting is useful: {:*<n.x} --> * = filler char, (<,>,or ^) = align left,right, or center, n.x = fill for n spaces, cut off after x
 
-    #ATTEMPT AT MULTI-PRINT
-    #msg_list = []
-    #if msg_flag == "start":
-        #msg_list.append("**Events for {}**  \n".format(state))
-        #msg = ''.join(msg_list)
-    #elif msg_flag == "data":
-        #msg_list.append(" \n```")
-        #column_str, spacer_str = row_format_for_code_print(columns,header=True)
-        #msg_list.append(column_str)
-        #msg_list.append(spacer_str)       
-        #for row_dict in data:
-            #msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
-        #msg_list.append(" \n```")
-        #msg = ''.join(msg_list)
-    #elif msg_flag == "end":
-        #msg_list.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
-        #msg_list.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
-        #msg_list.append("Example:  :: -e TX -f collab  -m  \n") 
-        #msg_list.append("Example:  :: events TX mobile   \n") 
-        #msg = ''.join(msg_list)
-    #return msg
-
+    #    print ("\n DATA \n")
+    #    print (data)
+    #    print ("\n COLUMNS \n")
+    #    print (columns)
     msg_list = []
-    if msg_break:
-        msg_list.append(" \n```")
-        column_str, spacer_str = row_format_for_code_print(columns,header=True)
-        msg_list.append(column_str)
-        msg_list.append(spacer_str)       
-        for row_dict in data:
-            msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
-    else:
+    if msg_flag == "start":
         msg_list.append("**Events for {}**  \n".format(state))
-        #msg_list.append("Copy/Paste to download email template:   **{} {} email**  \n```".format(BOT_NAME,state))
-        #msg_list.append("Have an event to share?  Add it [here]({})  \n```".format(EVENT_FORM_URL))
         msg_list.append(" \n```")
         column_str, spacer_str = row_format_for_code_print(columns,header=True)
         msg_list.append(column_str)
         msg_list.append(spacer_str)       
         for row_dict in data:
             msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
-
-    msg_list.append("  \n```")
-    msg_list.append("  \n ")
-    msg_list.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
-    msg_list.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
-    msg_list.append("Example:  :: -e TX -f collab  -m  \n") 
-    msg_list.append("Example:  :: events TX mobile   \n") 
+    elif msg_flag == "data":
+        msg_list.append(" \n```")
+        column_str, spacer_str = row_format_for_code_print(columns,header=True)
+        msg_list.append(column_str)
+        msg_list.append(spacer_str)       
+        for row_dict in data:
+            msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
+    elif msg_flag == "end":
+        msg_list.append("  \n```")
+        msg_list.append("  \n ")
+        msg_list.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
+        msg_list.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
+        msg_list.append("Example:  :: -e TX -f collab  -m  \n") 
+        msg_list.append("Example:  :: events TX mobile   \n") 
     msg = ''.join(msg_list)
     return msg
 
@@ -501,6 +481,9 @@ def process_arch_filter(string):
         ("Security",["sec","security","cyber"]),
         ("Cyber Security",["sec","security","cyber"]),
         ("Data Center",["data","dc","datacenter"]),
+        ("Internet of Things (IoT)",["iot"]),
+        ("Cloud",["cloud"]),
+        ("Enterprise Network",["en","enterprise","routing","switching","sw","sda","dna","wireless"]),
         ("Collaboration",["col","collab","collaboration","colab","voice","video","webex","contact","cc","ucce","uccx"])
         
     ]
