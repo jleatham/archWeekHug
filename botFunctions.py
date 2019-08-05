@@ -187,8 +187,8 @@ def format_code_print_for_bot(data,state,columns,msg_flag):
         msg_list.append(spacer_str)       
         for row_dict in data:
             msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
-    elif msg_flag == "end":
         msg_list.append("  \n```")
+    elif msg_flag == "end":
         msg_list.append("  \n ")
         msg_list.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
         msg_list.append("Example:  :: events CA NV WA filter sec dc mobile  \n")   
