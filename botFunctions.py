@@ -517,7 +517,7 @@ def format_code_print_for_bot_mobile(data,state,columns,msg_flag):
     column_str, spacer_str = row_format_for_code_print(columns,header=True)
 
     if msg_flag =="start":
-        msg_list.append("##Events for {}##  \n ".format(state))
+        msg_list.append("**Events for {}**  \n\n ".format(state))
     elif msg_flag =="data":       
         for row_dict in data:
             msg_list.append(row_format_for_code_print_mobile(columns,row_dict=row_dict))
@@ -529,13 +529,12 @@ def format_code_print_for_bot_mobile(data,state,columns,msg_flag):
         msg_list.append("Example:  :: events TX mobile   \n")  
 
     msg = ''.join(msg_list)
-    print ("\n\n *** Broken Data ***")
-    print (len(data))
-    print ("\n\n")
-    #print (msg_list)
+ #   print ("\n\n *** Broken Data ***")
+ #   print (len(data))
+ #   print ("\n\n")
+#    print (msg_list)
     return msg
-    #return msg_list
-
+ 
 
 
 def row_format_for_code_print_mobile(columns,header=False,row_dict={}):
