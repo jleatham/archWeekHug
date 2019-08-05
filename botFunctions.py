@@ -174,12 +174,12 @@ def format_code_print_for_bot(data,state,columns,msg_flag):
     msg_list = []
     if msg_flag == "start":
         msg_list.append("**Events for {}**  \n".format(state))
-        msg_list.append(" \n```")
-        column_str, spacer_str = row_format_for_code_print(columns,header=True)
-        msg_list.append(column_str)
-        msg_list.append(spacer_str)       
-        for row_dict in data:
-            msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
+    #    msg_list.append(" \n```")
+    #    column_str, spacer_str = row_format_for_code_print(columns,header=True)
+    #    msg_list.append(column_str)
+    #    msg_list.append(spacer_str)       
+    #    for row_dict in data:
+    #        msg_list.append(row_format_for_code_print(columns,row_dict=row_dict))
     elif msg_flag == "data":
         msg_list.append(" \n```")
         column_str, spacer_str = row_format_for_code_print(columns,header=True)
