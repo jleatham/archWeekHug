@@ -93,12 +93,14 @@ def process_bot_input_command(room_id,command, headers, bot_name):
     state_filter = []
     arch_filter = []
     mobile_filter = False
+    url_filter = False
     data = []
     
     command_list = [
         ("events",['event','events','-e']),
         ("mobile",['mobile','phone','-m']),
-        ("filter",['filter','-f'])
+        ("filter",['filter','-f'],
+        "url_test",['url','-u'])
         #("command alias",["list of possible command entries"])
     ]
     result = command_parse(command_list,command)
@@ -113,13 +115,14 @@ def process_bot_input_command(room_id,command, headers, bot_name):
         if "mobile" in result:
             print(f"made it to mobile:  {result['mobile']}") 
             mobile_filter = True
-                        
-        data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,NO_COLUMN_FILTER)
-        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,help=False)
+        if "url_test" in result:
+            print(f"made it to url_test:  {result['url_test']}") 
+            url_filter = True
+
+        data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
+        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
     else:
-        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,help=True)      
-
-
+        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=True)      
 
               
 def get_msg_sent_to_bot(msg_id, headers):
@@ -173,8 +176,13 @@ def error_handling(response,err_code,user_input,room_id,headers):
     bot_post_to_room(room_id,message,headers)
 
 
-def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter=False,help=False):
+def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter=False,url_filter=False,help=False):
     if not help:
+        if url_filter:
+            #do something
+            for i in data:
+                if i["url"]:
+                    print(f"{i['Event Name']}   {i['url']} ")
         if not mobile_filter:
             state_list_joined = " ".join(state_filter)
 

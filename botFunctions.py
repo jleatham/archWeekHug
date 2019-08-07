@@ -114,7 +114,7 @@ def format_help_msg(area_dict, bot_name):
     msg = ''.join(msg_list)
     return msg
 
-def get_all_data_and_filter(ss_client,sheet_id,state,arch_filter,column_filter_list = []):
+def get_all_data_and_filter(ss_client,sheet_id,state,arch_filter=False,url_filter=False,column_filter_list = []):
     """
         Sort through smartsheet and grab all data.  Use NO_COLUMN_FILTER to get all data
         Filter based on states provided, if date is in the future, and not cancelled
@@ -126,6 +126,8 @@ def get_all_data_and_filter(ss_client,sheet_id,state,arch_filter,column_filter_l
     all_data_list = []
     for row in sheet.rows:
         row_dict = {}
+        row_dict["ss_row_id"] = str(row.id)
+        row_dict["url"] = ""        
         for cell in row.cells:
             #map the column id to the column name
             #map the cell data to the column or '' if null
@@ -144,6 +146,24 @@ def get_all_data_and_filter(ss_client,sheet_id,state,arch_filter,column_filter_l
                 all_data_list.append(row_dict)
         except Exception as e:
             print(f"Error in event row:  {e}")
+    
+    
+    '''
+        Smartsheet API forces attachment to be aquired seperately
+        First get all attachment IDs in the sheet, then grab the URL
+        for each ID (with individual API call...)
+    '''
+    if url_filter:
+        attachments = ss_client.Attachments.list_all_attachments(sheet_id)  
+        for a in attachments.result:
+            #print(dir(i))
+            #print(i)
+            attachment = ss_client.Attachments.get_attachment(sheet_id,a.id)
+            for i in all_data_list:
+                if i["ss_row_id"] == str(attachment.parent_id):
+                    i["url"] = attachment.url    
+    
+    
     #sort data first by state, then by city, then by Date
     sorted_data = sorted(all_data_list, key=itemgetter('State','City','Event Date'))
     #Change date format and return
