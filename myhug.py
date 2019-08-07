@@ -99,8 +99,8 @@ def process_bot_input_command(room_id,command, headers, bot_name):
     command_list = [
         ("events",['event','events','-e']),
         ("mobile",['mobile','phone','-m']),
-        ("filter",['filter','-f'],
-        "url_test",['url','-u'])
+        ("filter",['filter','-f']),
+        ("url_test",['url','-u'])
         #("command alias",["list of possible command entries"])
     ]
     result = command_parse(command_list,command)
