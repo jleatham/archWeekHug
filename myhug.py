@@ -87,7 +87,7 @@ def hello(body):
         data_id = body["data"]["id"]
         person_id = body["data"]["personId"]
         room_id = body["data"]["roomId"]
-        identity = test_get_person_from_id(personId,TEST_HEADERS)
+        identity = test_get_person_from_id(person_id,TEST_HEADERS)
         card_inputs = test_get_card_msg(data_id,TEST_HEADERS)
         print(f"{card_inputs}")
 
@@ -191,7 +191,7 @@ def get_msg_sent_to_bot(msg_id, headers):
     return response["text"]
 
 def test_get_person_from_id(person_id, headers):
-    urltext = TEST_PERSON_URL + "/" + personId
+    urltext = TEST_PERSON_URL + "/" + person_id
     payload = ""
 
     response = requests.request("GET", urltext, data=payload, headers=headers)
