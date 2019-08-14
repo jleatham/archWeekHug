@@ -196,8 +196,9 @@ def test_get_person_from_id(person_id, headers):
 
     response = requests.request("GET", urltext, data=payload, headers=headers)
     response = json.loads(response.text)
-    #print ("Message to bot : {}".format(response["text"]))
-    return response["items"]["emails"][0]
+    print ("Message to bot : {}".format(response["text"]))
+    #return response["items"]["emails"][0]
+    return "blah"
 
 def test_get_card_msg(data_id, headers):
     urltext = TEST_CARD_MSG_URL + "/" + data_id
@@ -205,8 +206,9 @@ def test_get_card_msg(data_id, headers):
 
     response = requests.request("GET", urltext, data=payload, headers=headers)
     response = json.loads(response.text)
-    #print ("Message to bot : {}".format(response["text"]))
-    return response["inputs"]
+    print ("Message to bot : {}".format(response["text"]))
+    #return response["inputs"]
+    return "blah"
 
 
 def bot_post_to_room(room_id, message, headers):
