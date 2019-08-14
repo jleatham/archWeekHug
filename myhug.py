@@ -29,27 +29,83 @@ EVENTS_HEADERS = {
     'cache-control': "no-cache"
 }
 
+TEST_PERSON_URL = "https://api.ciscospark.com/v1/people"
+TEST_CARD_MSG_URL = "https://api.ciscospark.com/v1/attachment/actions"
+
+'''
+CARDS example
+{
+  "id": "Y2lzY29zcGFyazovL3VzL1dFQkhPT0svOTZhYmMyYWEtM2RjYy0xMWU1LWExNTItZmUzNDgxOWNkYzlh",
+  "name": "My Attachment Action Webhook",
+  "resource": "attachmentActions",
+  "event": "created",
+  "orgId": "OTZhYmMyYWEtM2RjYy0xMWU1LWExNTItZmUzNDgxOWNkYzlh",
+  "appId": "Y2lzY29zcGFyazovL3VzL0FQUExJQ0FUSU9OL0MyNzljYjMwYzAyOTE4MGJiNGJkYWViYjA2MWI3OTY1Y2RhMzliNjAyOTdjODUwM2YyNjZhYmY2NmM5OTllYzFm",
+  "ownedBy": "creator",
+  "status": "active",
+  "actorId": "Y2lzY29zcGFyazovL3VzL1BFT1BMRS83MTZlOWQxYy1jYTQ0LTRmZ",
+  "data": {
+    "id": "Y2lzY29zcGFyazovL3VzL09SR0FOSVpBVElPTi85NmFiYzJhYS0zZGNjLTE",
+    "type": "submit",
+    "messageId": "GFyazovL3VzL1BFT1BMRS80MDNlZmUwNy02Yzc3LTQyY2UtOWI4NC",
+    "personId": "Y2lzY29zcGFyazovL3VzL1BFT1BMRS83MTZlOWQxYy1jYTQ0LTRmZ",
+    "roomId": "L3VzL1BFT1BMRS80MDNlZmUwNy02Yzc3LTQyY2UtOWI",
+    "created": "2016-05-10T19:41:00.100Z"
+  }
+}
+'''
+
+'''
+Get card attachment
+{
+  "type": "submit",
+  "messageId": "GFyazovL3VzL1BFT1BMRS80MDNlZmUwNy02Yzc3LTQyY2UtOWI4NC",
+  "inputs": {
+    "Name": "John Andersen",
+    "Url": "https://example.com",
+    "Email": "john.andersen@example.com",
+    "Tel": "+1 408 526 7209"
+  },
+  "id": "Y2lzY29zcGFyazovL3VzL09SR0FOSVpBVElPTi85NmFiYzJhYS0zZGNjLTE",
+  "personId": "Y2lzY29zcGFyazovL3VzL1BFT1BMRS83MTZlOWQxYy1jYTQ0LTRmZ",
+  "roomId": "L3VzL1BFT1BMRS80MDNlZmUwNy02Yzc3LTQyY2UtOWI",
+  "created": "2016-05-10T19:41:00.100Z"
+}
+'''
 
 @hug.post('/hello', examples='hello')
 def hello(body):
     """
         Test bot for new features.
     """
-    #print("GOT {}: {}".format(type(body), repr(body)))
-    room_id = body["data"]["roomId"]
-    identity = body["data"]["personEmail"]
-    text = body["data"]["id"]
-    print("see POST from {}".format(identity))
-    if identity != TEST_EMAIL:
-        print("{}-----{}".format(identity,TEST_EMAIL))
-        #command = get_msg_sent_to_bot(text).lower()
-        command = get_msg_sent_to_bot(text, TEST_HEADERS)
-        command = (command.replace(TEST_NAME, '')).strip()
-        command = (command.replace('@', '')).strip()
-        command = command.lower()  #added this, don't forget to move to events-bot as well
-        print("stripped command: {}".format(command))
-        process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
-        send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
+    print(f"GOT {type(body)}: {repr(body)}")
+    resource = body["resource"]
+    if resource == "attachmentActions":
+        card_id = body["id"]
+        app_id = body["appId"]
+        actor_id = body["actorId"]
+        data_id = body["data"]["id"]
+        person_id = body["data"]["personId"]
+        room_id = body["data"]["roomId"]
+        identity = test_get_person_from_id(personId,TEST_HEADERS)
+        card_inputs = test_get_card_msg(data_id,TEST_HEADERS)
+        print(f"{card_inputs}")
+
+    else:
+        room_id = body["data"]["roomId"]
+        identity = body["data"]["personEmail"]
+        text = body["data"]["id"]
+        print("see POST from {}".format(identity))
+        if identity != TEST_EMAIL:
+            print("{}-----{}".format(identity,TEST_EMAIL))
+            #command = get_msg_sent_to_bot(text).lower()
+            command = get_msg_sent_to_bot(text, TEST_HEADERS)
+            command = (command.replace(TEST_NAME, '')).strip()
+            command = (command.replace('@', '')).strip()
+            command = command.lower()  #added this, don't forget to move to events-bot as well
+            print("stripped command: {}".format(command))
+            process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
+            send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
 
 
 @hug.post('/events', examples='events')
@@ -133,6 +189,24 @@ def get_msg_sent_to_bot(msg_id, headers):
     response = json.loads(response.text)
     #print ("Message to bot : {}".format(response["text"]))
     return response["text"]
+
+def test_get_person_from_id(person_id, headers):
+    urltext = TEST_PERSON_URL + "/" + personId
+    payload = ""
+
+    response = requests.request("GET", urltext, data=payload, headers=headers)
+    response = json.loads(response.text)
+    #print ("Message to bot : {}".format(response["text"]))
+    return response["items"]["emails"][0]
+
+def test_get_card_msg(data_id, headers):
+    urltext = TEST_CARD_MSG_URL + "/" + data_id
+    payload = ""
+
+    response = requests.request("GET", urltext, data=payload, headers=headers)
+    response = json.loads(response.text)
+    #print ("Message to bot : {}".format(response["text"]))
+    return response["inputs"]
 
 
 def bot_post_to_room(room_id, message, headers):
