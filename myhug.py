@@ -90,6 +90,7 @@ def hello(body):
         identity = test_get_person_from_id(person_id,TEST_HEADERS)
         card_inputs = test_get_card_msg(data_id,TEST_HEADERS)
         print(f"{card_inputs}")
+        test_create_card(TEST_HEADERS)
 
     else:
         room_id = body["data"]["roomId"]
@@ -209,6 +210,117 @@ def test_get_card_msg(data_id, headers):
     #print ("Message to bot : {}".format(response["text"]))
     return response["inputs"]
 
+def test_create_card(headers):
+    card_payload = """
+    {
+        "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj",
+        "markdown": "[Test](https://www.example.com/form/book-vacation). Blah blah",
+        "attachments": [
+            {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.0",
+                "body": [
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                    {
+                        "type": "Column",
+                        "width": 2,
+                        "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Tell us about yourself",
+                            "weight": "bolder",
+                            "size": "medium"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "We just need a few more details to get you booked for the trip of a lifetime!",
+                            "isSubtle": true,
+                            "wrap": true
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "Don't worry, we'll never share or sell your information.",
+                            "isSubtle": true,
+                            "wrap": true,
+                            "size": "small"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "Your name",
+                            "wrap": true
+                        },
+                        {
+                            "type": "Input.Text",
+                            "id": "Name",
+                            "placeholder": "John Andersen"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "Your website",
+                            "wrap": true
+                        },
+                        {
+                            "type": "Input.Text",
+                            "id" : "Url",
+                            "placeholder": "https://example.com"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "Your email",
+                            "wrap": true
+                        },
+                        {
+                            "type": "Input.Text",
+                            "id": "Email",
+                            "placeholder": "john.andersen@example.com",
+                            "style": "email"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "Phone Number"
+                        },
+                        {
+                            "type": "Input.Text",
+                            "id": "Tel",
+                            "placeholder": "+1 408 526 7209",
+                            "style": "tel"
+                        }
+                        ]
+                    },
+                    {
+                        "type": "Column",
+                        "width": 1,
+                        "items": [
+                        {
+                            "type": "Image",
+                            "url": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Diver_Silhouette%2C_Great_Barrier_Reef.jpg",
+                            "size": "auto"
+                        }
+                        ]
+                    }
+                    ]
+                }
+                ],
+                "actions": [
+                {
+                    "type": "Action.Submit",
+                    "title": "Submit"
+                }
+                ]
+            }
+            }
+        ]
+    }
+    """
+    #payload = {"roomId": room_id,"markdown": message}
+    #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
+    response = requests.request("POST", URL, data=card_payload, headers=headers)
+    return response
 
 
 def bot_post_to_room(room_id, message, headers):
