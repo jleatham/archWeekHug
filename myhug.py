@@ -272,7 +272,7 @@ def test_create_card(headers):
     )       
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
-    response = requests.request("POST", URL, data=card_payload, headers=headers)
+    response = requests.request("POST", URL, data=test_card_payload, headers=headers)
     return response
 
 
