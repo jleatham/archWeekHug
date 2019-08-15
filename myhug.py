@@ -78,8 +78,9 @@ def hello(body):
     """
         Test bot for new features.
     """
-    print(f"GOT {type(body)}: {repr(body)}")
+    #print(f"GOT {type(body)}: {repr(body)}")
     resource = body["resource"]
+    print(f'Resource = {resource}')
     if resource == "attachmentActions":
         card_id = body["id"]
         app_id = body["appId"]
@@ -197,7 +198,7 @@ def test_get_person_from_id(person_id, headers):
 
     response = requests.request("GET", urltext, data=payload, headers=headers)
     response = json.loads(response.text)
-    print ("Message to bot : {}".format(response["emails"]))
+    #print ("Message to bot : {}".format(response["emails"]))
     return response["emails"][0]
 
 
@@ -207,7 +208,7 @@ def test_get_card_msg(data_id, headers):
 
     response = requests.request("GET", urltext, data=payload, headers=headers)
     response = json.loads(response.text)
-    #print ("Message to bot : {}".format(response["text"]))
+    print ("Message to bot : {}".format(response))
     return response["inputs"]
 
 def test_create_card(room_id,headers):
