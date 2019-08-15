@@ -372,7 +372,7 @@ def test_create_card(room_id,headers):
     #room_id = "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj"
     markdown = "This is mark down text [link](www.google.com)"
     version = "1.0"
-
+    ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     #area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
     area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
     area_state_codes_list = []
