@@ -78,7 +78,7 @@ def hello(body):
     """
         Test bot for new features.
     """
-    #print(f"GOT {type(body)}: {repr(body)}")
+    print(f"GOT {type(body)}: {repr(body)}")
     resource = body["resource"]
     bot_event = body["event"]
     print(f'Resource = {resource}    Event = {bot_event}')
@@ -111,6 +111,7 @@ def hello(body):
             send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
     elif resource == "membership":
         if bot_event == "created":
+            room_id = body["data"]["roomId"]
             test_create_card(room_id,TEST_HEADERS)
 
 
