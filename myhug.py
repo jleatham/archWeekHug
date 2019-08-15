@@ -329,7 +329,7 @@ def test_create_card(room_id,headers):
     markdown = "This is mark down text [link](www.google.com)"
     version = "1.0"
 
-    area_dict = {"south":["TX","AR","NC"],"west":["CA","OR"]}
+    area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
     area_state_codes_list = []
     for area, states in area_dict.items():  
         state_value = " , ".join(states)
@@ -339,6 +339,7 @@ def test_create_card(room_id,headers):
     area_state_codes = area_state_codes[:-1] #remove last comma
 
     arch_options = [ #turn into global
+        ("",["all"]),
         ("Cross Architecture",["cross arch","cross","arch"]),
         ("Security",["sec","security","cyber"]),
         ("Data Center",["dc","data","datacenter"]),
@@ -360,8 +361,9 @@ def test_create_card(room_id,headers):
         f'{{"type": "TextBlock","text": "Events-tbd Bot","weight": "Bolder","size": "Medium"}},'
         f'{{"type": "TextBlock","text": "Enter a State Code from the list below:","isSubtle": true,"wrap": true}},'
         f'{{"type": "FactSet","facts": [{area_state_codes}],"id": "state_list"}},'
-        f'{{"type": "TextBlock","text": "State Code","wrap": true}},'
+        f'{{"type": "TextBlock","text": "Enter State Code:","wrap": true}},'
         f'{{"type": "Input.Text","placeholder": "TX","id": "state_code"}},'
+        f'{{"type": "TextBlock","text": "Filter Events by Architecture:","wrap": true}},'        
         f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": false,"value": ""}},'
         f'{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}]}}]}}'
     )
