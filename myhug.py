@@ -80,7 +80,8 @@ def hello(body):
     """
     #print(f"GOT {type(body)}: {repr(body)}")
     resource = body["resource"]
-    print(f'Resource = {resource}')
+    bot_event = body["event"]
+    print(f'Resource = {resource}    Event = {bot_event}')
     if resource == "attachmentActions":
         card_id = body["id"]
         app_id = body["appId"]
@@ -91,9 +92,9 @@ def hello(body):
         identity = test_get_person_from_id(person_id,TEST_HEADERS)
         card_inputs = test_get_card_msg(data_id,TEST_HEADERS)
         print(f"{card_inputs}")
-        test_create_card(room_id,TEST_HEADERS)
+        #test_create_card(room_id,TEST_HEADERS)
 
-    else:
+    elif resource == "messages":
         room_id = body["data"]["roomId"]
         identity = body["data"]["personEmail"]
         text = body["data"]["id"]
@@ -108,6 +109,9 @@ def hello(body):
             print("stripped command: {}".format(command))
             process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
             send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
+    elif resource == "membership":
+        if bot_event == "created":
+            test_create_card(room_id,TEST_HEADERS)
 
 
 @hug.post('/events', examples='events')
