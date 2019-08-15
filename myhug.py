@@ -90,7 +90,7 @@ def hello(body):
         identity = test_get_person_from_id(person_id,TEST_HEADERS)
         card_inputs = test_get_card_msg(data_id,TEST_HEADERS)
         print(f"{card_inputs}")
-        test_create_card(TEST_HEADERS)
+        test_create_card(room_id,TEST_HEADERS)
 
     else:
         room_id = body["data"]["roomId"]
@@ -210,23 +210,125 @@ def test_get_card_msg(data_id, headers):
     #print ("Message to bot : {}".format(response["text"]))
     return response["inputs"]
 
-def test_create_card(headers):
+def test_create_card(room_id,headers):
     card_payload = """
                            
+    {
+    "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj",
+    "markdown": "[Tell us about yourself](https://www.example.com/form/book-vacation). We just need a few more details to get you booked for the trip of a lifetime!",
+    "attachments": [
+        {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+                    "content": {
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "type": "AdaptiveCard",
+                    "version": "1.0",
+                    "body": [
+                        {
+                            "type": "ColumnSet",
+                            "columns": [
+                                {
+                                    "type": "Column",
+                                    "width": 3,
+                                    "items": [
+                            {
+                                "type": "TextBlock",
+                                "text": "Events-tbd Bot",
+                                "weight": "Bolder",
+                                "size": "Medium"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": "Enter a State Code from the list below:",
+                                "isSubtle": true,
+                                "wrap": true
+                            },
+                            {
+                                "type": "FactSet",
+                                "facts": [
+                                    {
+                                        "title": "South",
+                                        "value": "TX FL CA"
+                                    },
+                                    {
+                                        "title": "East",
+                                        "value": "NC NY MA"
+                                    }
+                                ],
+                                "id": "state_list"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": "State Code",
+                                "wrap": true
+                            },
+                            {
+                                "type": "Input.Text",
+                                "placeholder": "TX",
+                                "id": "stace_code"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": "Filter",
+                                "wrap": true
+                            },
+                            {
+                                "type": "FactSet",
+                                "facts": [
+                                    {
+                                        "title": "Collaboration",
+                                        "value": "collab"
+                                    },
+                                    {
+                                        "title": "Data Center",
+                                        "value": "dc"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "Input.Text",
+                                "id": "filter_flag",
+                                "placeholder": "collab",
+                                "value": ""
+                            },
+                            {
+                                "type": "Input.Toggle",
+                                "title": "Mobile?",
+                                "value": "false",
+                                "wrap": false,
+                                "id" : "mobile_flag"
+                            }
+
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "actions": [
+                        {
+                            "type": "Action.Submit",
+                            "title": "Submit"
+                        }
+                    ]
+                }
+        }
+    ]
+    }
                           
     """
-    room_id = "ABCD"
-    markdown = "This is mark down text [link](www.google.com)"
+
+    #room_id = "ABCD"
+    markdown = "This is the events bot."
     version = "1.0"
 
     area_dict = {"south":["TX","AR","NC"],"west":["CA","OR"]}
     area_state_codes_list = []
     for area, states in area_dict.items():  
         state_value = " , ".join(states)
-        area_state_codes_list.append(f'{{"title": {area},"value": "{state_value}" }},')
+        area_state_codes_list.append(f'{{"title": "{area}","value": "{state_value}" }},')
 
     area_state_codes = "".join(area_state_codes_list)
-    area_state_codes[:-1] #remove last comma
+    area_state_codes = area_state_codes[:-1] #remove last comma
 
     arch_options = [ #turn into global
         ("Cross Architecture",["cross","arch"]),
@@ -242,17 +344,17 @@ def test_create_card(headers):
     filter_list = []
     for arch in arch_options:  
         arch_value = " , ".join(arch[1])
-        filter_list.append(f'{{"title": {arch[0]},"value": "{arch_value}" }},')
+        filter_list.append(f'{{"title": "{arch[0]}","value": "{arch_value}" }},')
 
     filter_options = "".join(filter_list)
-    filter_options[:-1] #remove last comma    
+    filter_options = filter_options[:-1] #remove last comma    
     body = (
         f'{{"type": "ColumnSet","columns": [{{"type": "Column","width": 2,"items": ['
         f'{{"type": "TextBlock","text": "Events-tbd Bot","weight": "Bolder","size": "Medium"}},'
         f'{{"type": "TextBlock","text": "Enter a State Code from the list below:","isSubtle": true,"wrap": true}},'
         f'{{"type": "FactSet","facts": [{area_state_codes}],"id": "state_list"}},'
         f'{{"type": "TextBlock","text": "State Code","wrap": true}},'
-        f'{{"type": "Input.Text","placeholder": "TX","id": "stace_code"}},'
+        f'{{"type": "Input.Text","placeholder": "TX","id": "state_code"}},'
         f'{{"type": "TextBlock","text": "Filter","wrap": true}},'
         f'{{"type": "FactSet","facts": [{filter_options}]}},'
         f'{{"type": "Input.Text","id": "filter_flag","placeholder": "collab","value": ""}},'
@@ -260,16 +362,16 @@ def test_create_card(headers):
     )
     test_card_payload = (
         f'{{'
-        f'"roomId": {room_id},'
-        f'"markdown": {markdown},'
-        f'"attachments": [{{,'
+        f'"roomId": "{room_id}",'
+        f'"markdown": "{markdown}",'
+        f'"attachments": [{{'
         f'"contentType": "application/vnd.microsoft.card.adaptive",'
         f'"content": {{"$schema": "http://adaptivecards.io/schemas/adaptive-card.json","type": "AdaptiveCard",'
-        f'"version": {version},"body": [{body}],'
+        f'"version": "{version}","body": [{body}],'
         f'"actions": [{{"type":"Action.Submit","title":"Submit"}}]'
         f'}} }} ] }}'
 
-    )       
+    )         
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
     response = requests.request("POST", URL, data=test_card_payload, headers=headers)
