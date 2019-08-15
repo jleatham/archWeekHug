@@ -212,122 +212,64 @@ def test_get_card_msg(data_id, headers):
 
 def test_create_card(headers):
     card_payload = """
-    {
-        "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj",
-        "markdown": "[Test](https://www.example.com/form/book-vacation). Blah blah",
-        "attachments": [
-            {
-            "contentType": "application/vnd.microsoft.card.adaptive",
-            "content": 
-            
-            
-                {
-                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                    "type": "AdaptiveCard",
-                    "version": "1.0",
-                    "body": [
-                        {
-                            "type": "ColumnSet",
-                            "columns": [
-                                {
-                                    "type": "Column",
-                                    "width": 2,
-                                    "items": [
-                                        {
-                                            "type": "TextBlock",
-                                            "text": "Events-tbd Bot",
-                                            "weight": "Bolder",
-                                            "size": "Medium"
-                                        },
-                                        {
-                                            "type": "TextBlock",
-                                            "text": "Enter a State Code from the list below:",
-                                            "isSubtle": true,
-                                            "wrap": true
-                                        },
-                                        {
-                                            "type": "FactSet",
-                                            "facts": [
-                                                {
-                                                    "title": "South",
-                                                    "value": "TX FL CA"
-                                                },
-                                                {
-                                                    "title": "East",
-                                                    "value": "NC NY MA"
-                                                }
-                                            ],
-                                            "id": "state_list"
-                                        },
-                                        {
-                                            "type": "TextBlock",
-                                            "text": "State Code",
-                                            "wrap": true
-                                        },
-                                        {
-                                            "type": "Input.Text",
-                                            "title": "New Input.Toggle",
-                                            "placeholder": "TX"
-                                        },
-                                        {
-                                            "type": "TextBlock",
-                                            "text": "Filter",
-                                            "wrap": true
-                                        },
-                                        {
-                                            "type": "FactSet",
-                                            "facts": [
-                                                {
-                                                    "title": "Collaboration",
-                                                    "value": "collab"
-                                                },
-                                                {
-                                                    "title": "Data Center",
-                                                    "value": "dc"
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "type": "Input.Text",
-                                            "id": "Url",
-                                            "placeholder": "collab",
-                                            "value": ""
-                                        },
-                                        {
-                                            "type": "Input.Toggle",
-                                            "title": "Mobile?",
-                                            "value": "false",
-                                            "wrap": false
-                                        }
-                                    ]
-                                },
-                                {
-                                    "type": "Column",
-                                    "width": 1,
-                                    "items": [
-                                        {
-                                            "type": "Image",
-                                            "url": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Diver_Silhouette%2C_Great_Barrier_Reef.jpg",
-                                            "size": "auto"
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ],
-                    "actions": [
-                        {
-                            "type": "Action.Submit",
-                            "title": "Submit"
-                        }
-                    ]
-                }
-
-
-            }
-        ]
-    }
+                           
+                          
     """
+    room_id = "ABCD"
+    markdown = "This is mark down text [link](www.google.com)"
+    version = "1.0"
+
+    area_dict = {"south":["TX","AR","NC"],"west":["CA","OR"]}
+    area_state_codes_list = []
+    for area, states in area_dict.items():  
+        state_value = " , ".join(states)
+        area_state_codes_list.append(f'{{"title": {area},"value": "{state_value}" }},')
+
+    area_state_codes = "".join(area_state_codes_list)
+    area_state_codes[:-1] #remove last comma
+
+    arch_options = [ #turn into global
+        ("Cross Architecture",["cross","arch"]),
+        ("Security",["sec","security","cyber"]),
+        ("Cyber Security",["sec","security","cyber"]),
+        ("Data Center",["data","dc","datacenter"]),
+        ("Internet of Things (IoT)",["iot"]),
+        ("Cloud",["cloud"]),
+        ("Enterprise Network",["en","enterprise","routing","switching","sw","sda","dna","wireless"]),
+        ("Collaboration",["col","collab","collaboration","colab","voice","video","webex","contact","cc","ucce","uccx"])
+
+    ]    
+    filter_list = []
+    for arch in arch_options:  
+        arch_value = " , ".join(arch[1])
+        filter_list.append(f'{{"title": {arch[0]},"value": "{arch_value}" }},')
+
+    filter_options = "".join(filter_list)
+    filter_options[:-1] #remove last comma    
+    body = (
+        f'{{"type": "ColumnSet","columns": [{{"type": "Column","width": 2,"items": ['
+        f'{{"type": "TextBlock","text": "Events-tbd Bot","weight": "Bolder","size": "Medium"}},'
+        f'{{"type": "TextBlock","text": "Enter a State Code from the list below:","isSubtle": true,"wrap": true}},'
+        f'{{"type": "FactSet","facts": [{area_state_codes}],"id": "state_list"}},'
+        f'{{"type": "TextBlock","text": "State Code","wrap": true}},'
+        f'{{"type": "Input.Text","placeholder": "TX","id": "stace_code"}},'
+        f'{{"type": "TextBlock","text": "Filter","wrap": true}},'
+        f'{{"type": "FactSet","facts": [{filter_options}]}},'
+        f'{{"type": "Input.Text","id": "filter_flag","placeholder": "collab","value": ""}},'
+        f'{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}]}}]}}'
+    )
+    test_card_payload = (
+        f'{{'
+        f'"roomId": {room_id},'
+        f'"markdown": {markdown},'
+        f'"attachments": [{{,'
+        f'"contentType": "application/vnd.microsoft.card.adaptive",'
+        f'"content": {{"$schema": "http://adaptivecards.io/schemas/adaptive-card.json","type": "AdaptiveCard",'
+        f'"version": {version},"body": [{body}],'
+        f'"actions": [{{"type":"Action.Submit","title":"Submit"}}]'
+        f'}} }} ] }}'
+
+    )       
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
     response = requests.request("POST", URL, data=card_payload, headers=headers)
