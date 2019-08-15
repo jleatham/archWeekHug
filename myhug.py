@@ -317,8 +317,8 @@ def test_create_card(room_id,headers):
                           
     """
 
-    #room_id = "ABCD"
-    markdown = "This is the events bot."
+    #room_id = "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj"
+    markdown = "This is mark down text [link](www.google.com)"
     version = "1.0"
 
     area_dict = {"south":["TX","AR","NC"],"west":["CA","OR"]}
@@ -331,20 +331,19 @@ def test_create_card(room_id,headers):
     area_state_codes = area_state_codes[:-1] #remove last comma
 
     arch_options = [ #turn into global
-        ("Cross Architecture",["cross","arch"]),
+        ("Cross Architecture",["cross arch","cross","arch"]),
         ("Security",["sec","security","cyber"]),
-        ("Cyber Security",["sec","security","cyber"]),
-        ("Data Center",["data","dc","datacenter"]),
+        ("Data Center",["dc","data","datacenter"]),
         ("Internet of Things (IoT)",["iot"]),
         ("Cloud",["cloud"]),
         ("Enterprise Network",["en","enterprise","routing","switching","sw","sda","dna","wireless"]),
-        ("Collaboration",["col","collab","collaboration","colab","voice","video","webex","contact","cc","ucce","uccx"])
+        ("Collaboration",["collab","col","collaboration","colab","voice","video","webex","contact","cc","ucce","uccx"])
 
     ]    
     filter_list = []
     for arch in arch_options:  
-        arch_value = " , ".join(arch[1])
-        filter_list.append(f'{{"title": "{arch[0]}","value": "{arch_value}" }},')
+        arch_value = arch[1][0].upper()
+        filter_list.append(f'{{"title": "{arch_value}","value": "{arch[0]}" }},')
 
     filter_options = "".join(filter_list)
     filter_options = filter_options[:-1] #remove last comma    
@@ -355,9 +354,7 @@ def test_create_card(room_id,headers):
         f'{{"type": "FactSet","facts": [{area_state_codes}],"id": "state_list"}},'
         f'{{"type": "TextBlock","text": "State Code","wrap": true}},'
         f'{{"type": "Input.Text","placeholder": "TX","id": "state_code"}},'
-        f'{{"type": "TextBlock","text": "Filter","wrap": true}},'
-        f'{{"type": "FactSet","facts": [{filter_options}]}},'
-        f'{{"type": "Input.Text","id": "filter_flag","placeholder": "collab","value": ""}},'
+        f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": true,"value": ""}},'
         f'{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}]}}]}}'
     )
     test_card_payload = (
@@ -371,7 +368,7 @@ def test_create_card(room_id,headers):
         f'"actions": [{{"type":"Action.Submit","title":"Submit"}}]'
         f'}} }} ] }}'
 
-    )         
+    )     
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
     response = requests.request("POST", URL, data=test_card_payload, headers=headers)
