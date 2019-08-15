@@ -107,7 +107,7 @@ def hello(body):
             command = (command.replace('@', '')).strip()
             command = command.lower()  #added this, don't forget to move to events-bot as well
             print("stripped command: {}".format(command))
-            process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
+            test_process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
             send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
     elif resource == "memberships":
         room_id = body["data"]["roomId"]
@@ -188,6 +188,50 @@ def process_bot_input_command(room_id,command, headers, bot_name):
         communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
     else:
         communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=True)      
+
+def test_process_bot_input_command(room_id,command, headers, bot_name):
+    """ 
+        Provides a few different command options based in different lists. (commands should be lower case)
+        Combines all lists together and checks if any keyword commands are detected...basically a manually created case/switch statement
+        For each possible command, do something
+        Is there an easier way to do this?
+    """
+    ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
+    state_filter = []
+    arch_filter = []
+    mobile_filter = False
+    url_filter = False
+    data = []
+    
+    command_list = [
+        ("events",['event','events','-e']),
+        ("mobile",['mobile','phone','-m']),
+        ("filter",['filter','-f']),
+        ("url_test",['url','-u'])
+        #("command alias",["list of possible command entries"])
+    ]
+    result = command_parse(command_list,command)
+    ##looks like: {"event":"TX FL AL","filter":"sec dc","mobile":""}
+    if result:
+        if "events" in result:
+            print(f"made it to events:  {result['events']}") 
+            state_filter = process_state_codes(result['events'].upper().split(" "),reverse=False)
+        if "filter" in result:
+            print(f"made it to filter:  {result['filter']}") 
+            arch_filter = process_arch_filter(result['filter'])           
+        if "mobile" in result:
+            print(f"made it to mobile:  {result['mobile']}") 
+            mobile_filter = True
+        if "url_test" in result:
+            print(f"made it to url_test:  {result['url_test']}") 
+            url_filter = True
+
+        data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
+        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
+    else:
+        #communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=True)    
+        test_create_card(room_id,headers)  
+
 
               
 def get_msg_sent_to_bot(msg_id, headers):
@@ -329,7 +373,8 @@ def test_create_card(room_id,headers):
     markdown = "This is mark down text [link](www.google.com)"
     version = "1.0"
 
-    area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
+    #area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
+    area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
     area_state_codes_list = []
     for area, states in area_dict.items():  
         state_value = " , ".join(states)
@@ -361,11 +406,12 @@ def test_create_card(room_id,headers):
         f'{{"type": "TextBlock","text": "Events-tbd Bot","weight": "Bolder","size": "Medium"}},'
         f'{{"type": "TextBlock","text": "Enter a State Code from the list below:","isSubtle": true,"wrap": true}},'
         f'{{"type": "FactSet","facts": [{area_state_codes}],"id": "state_list"}},'
-        f'{{"type": "TextBlock","text": "Enter State Code:","wrap": true}},'
-        f'{{"type": "Input.Text","placeholder": "TX","id": "state_code"}},'
+        f'{{"type": "TextBlock","text": "Enter State Code(s):","wrap": true}},'
+        f'{{"type": "Input.Text","placeholder": "TX, FL, CA","id": "state_code"}},'
         f'{{"type": "TextBlock","text": "Filter Events by Architecture:","wrap": true}},'        
         f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": false,"value": ""}},'
-        f'{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}]}}]}}'
+        #f'{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}]}}]}}'
+        #mobile support for cards on Roadmap
     )
     test_card_payload = (
         f'{{'
