@@ -78,7 +78,7 @@ def hello(body):
     """
         Test bot for new features.
     """
-    print(f"GOT {type(body)}: {repr(body)}")
+    #print(f"GOT {type(body)}: {repr(body)}")
     resource = body["resource"]
     bot_event = body["event"]
     print(f'Resource = {resource}    Event = {bot_event}')
@@ -109,9 +109,11 @@ def hello(body):
             print("stripped command: {}".format(command))
             process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
             send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
-    elif resource == "membership":
-        if bot_event == "created":
-            room_id = body["data"]["roomId"]
+    elif resource == "memberships":
+        room_id = body["data"]["roomId"]
+        identity = body["data"]["personEmail"]
+        print(f'made it to memberships identity={identity}')
+        if bot_event == "created" and identity == TEST_EMAIL:
             test_create_card(room_id,TEST_HEADERS)
 
 
@@ -360,7 +362,7 @@ def test_create_card(room_id,headers):
         f'{{"type": "FactSet","facts": [{area_state_codes}],"id": "state_list"}},'
         f'{{"type": "TextBlock","text": "State Code","wrap": true}},'
         f'{{"type": "Input.Text","placeholder": "TX","id": "state_code"}},'
-        f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": true,"value": ""}},'
+        f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": false,"value": ""}},'
         f'{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}]}}]}}'
     )
     test_card_payload = (
