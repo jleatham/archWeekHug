@@ -89,9 +89,7 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
 
     if test_flag == True:
         msg = (
-            f"[link](https://www.google.com) \\n\\n hello"
-            f" \\n\\n `code snippet` \\n\\n"
-            f" \\n\\n `code snippet` \\n\\n"
+            f"[link](https://www.google.com)"
         )
         return msg
     else:

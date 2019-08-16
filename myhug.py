@@ -270,111 +270,109 @@ def test_get_card_msg(data_id, headers):
     return response["inputs"]
 
 def test_create_card(ss_client,room_id,headers):
-    card_payload = """
-                           
-    {
-    "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj",
-    "markdown": "[Tell us about yourself](https://www.example.com/form/book-vacation). We just need a few more details to get you booked for the trip of a lifetime!",
-    "attachments": [
-        {
-        "contentType": "application/vnd.microsoft.card.adaptive",
-                    "content": {
-                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                    "type": "AdaptiveCard",
-                    "version": "1.0",
-                    "body": [
-                        {
-                            "type": "ColumnSet",
-                            "columns": [
+    card_payload = '''{ "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj",           
+        
+        "markdown": "[Tell us about yourself](https://www.example.com/form/book-vacation). We just need a few more details to get you booked for the trip of a lifetime!",
+        "attachments": [
+            {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+                        "content": {
+                        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                        "type": "AdaptiveCard",
+                        "version": "1.0",
+                        "body": [
+                            {
+                                "type": "ColumnSet",
+                                "columns": [
+                                    {
+                                        "type": "Column",
+                                        "width": 3,
+                                        "items": [
                                 {
-                                    "type": "Column",
-                                    "width": 3,
-                                    "items": [
-                            {
-                                "type": "TextBlock",
-                                "text": "Events-tbd Bot",
-                                "weight": "Bolder",
-                                "size": "Medium"
-                            },
-                            {
-                                "type": "TextBlock",
-                                "text": "Enter a State Code from the list below:",
-                                "isSubtle": true,
-                                "wrap": true
-                            },
-                            {
-                                "type": "FactSet",
-                                "facts": [
-                                    {
-                                        "title": "South",
-                                        "value": "TX FL CA"
-                                    },
-                                    {
-                                        "title": "East",
-                                        "value": "NC NY MA"
-                                    }
-                                ],
-                                "id": "state_list"
-                            },
-                            {
-                                "type": "TextBlock",
-                                "text": "State Code",
-                                "wrap": true
-                            },
-                            {
-                                "type": "Input.Text",
-                                "placeholder": "TX",
-                                "id": "stace_code"
-                            },
-                            {
-                                "type": "TextBlock",
-                                "text": "Filter",
-                                "wrap": true
-                            },
-                            {
-                                "type": "FactSet",
-                                "facts": [
-                                    {
-                                        "title": "Collaboration",
-                                        "value": "collab"
-                                    },
-                                    {
-                                        "title": "Data Center",
-                                        "value": "dc"
+                                    "type": "TextBlock",
+                                    "text": "Events-tbd Bot",
+                                    "weight": "Bolder",
+                                    "size": "Medium"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Enter a State Code from the list below:",
+                                    "isSubtle": true,
+                                    "wrap": true
+                                },
+                                {
+                                    "type": "FactSet",
+                                    "facts": [
+                                        {
+                                            "title": "South",
+                                            "value": "TX FL CA"
+                                        },
+                                        {
+                                            "title": "East",
+                                            "value": "NC NY MA"
+                                        }
+                                    ],
+                                    "id": "state_list"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "State Code",
+                                    "wrap": true
+                                },
+                                {
+                                    "type": "Input.Text",
+                                    "placeholder": "TX",
+                                    "id": "stace_code"
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Filter",
+                                    "wrap": true
+                                },
+                                {
+                                    "type": "FactSet",
+                                    "facts": [
+                                        {
+                                            "title": "Collaboration",
+                                            "value": "collab"
+                                        },
+                                        {
+                                            "title": "Data Center",
+                                            "value": "dc"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "Input.Text",
+                                    "id": "filter_flag",
+                                    "placeholder": "collab",
+                                    "value": ""
+                                },
+                                {
+                                    "type": "Input.Toggle",
+                                    "title": "Mobile?",
+                                    "value": "false",
+                                    "wrap": false,
+                                    "id" : "mobile_flag"
+                                }
+
+                                        ]
                                     }
                                 ]
-                            },
-                            {
-                                "type": "Input.Text",
-                                "id": "filter_flag",
-                                "placeholder": "collab",
-                                "value": ""
-                            },
-                            {
-                                "type": "Input.Toggle",
-                                "title": "Mobile?",
-                                "value": "false",
-                                "wrap": false,
-                                "id" : "mobile_flag"
                             }
-
-                                    ]
-                                }
-                            ]
-                        }
-                    ],
-                    "actions": [
-                        {
-                            "type": "Action.Submit",
-                            "title": "Submit"
-                        }
-                    ]
-                }
+                        ],
+                        "actions": [
+                            {
+                                "type": "Action.Submit",
+                                "title": "Submit"
+                            }
+                        ]
+                    }
+            }
+        ]
         }
-    ]
-    }
-                          
-    """
+    '''                 
+    
     #ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     #area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
     area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)    
@@ -440,8 +438,11 @@ def test_create_card(ss_client,room_id,headers):
     )     
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
-    print(test_card_payload)
-    response = requests.request("POST", URL, data=test_card_payload, headers=headers)
+    #print(test_card_payload)
+    #response = requests.request("POST", URL, data=test_card_payload, headers=headers)
+    response = requests.post(URL, json=test_card_payload, headers=headers)
+    
+    #response = requests.request("POST", URL, data=json.dumps(card_payload), headers=headers)
     responseJson = json.loads(response.text)
     print(str(responseJson))
     return response
