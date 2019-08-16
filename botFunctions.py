@@ -347,7 +347,7 @@ def send_log_to_ss(bot_name,timestamp,identity,command,room_id):
                 ] }'     
     response = requests.request("POST", url, data=payload, headers=headers)
     responseJson = json.loads(response.text)
-    print(str(responseJson))
+    #print(str(responseJson))
 
 
 def command_parse(command_list,command):

@@ -108,14 +108,14 @@ def hello(body):
             command = command.lower()  #added this, don't forget to move to events-bot as well
             print("stripped command: {}".format(command))
             test_process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
-            send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
+            #send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
     elif resource == "memberships":
         room_id = body["data"]["roomId"]
         identity = body["data"]["personEmail"]
         print(f'made it to memberships identity={identity}')
         if bot_event == "created" and identity == TEST_EMAIL:
             print("made it to if")
-            test_create_card(room_id,TEST_HEADERS)
+            #test_create_card(room_id,TEST_HEADERS)
 
 
 @hug.post('/events', examples='events')
@@ -440,8 +440,8 @@ def test_create_card(ss_client,room_id,headers):
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
     #print(test_card_payload)
     response = requests.request("POST", URL, data=test_card_payload, headers=headers)
-    
-    print(response)
+    responseJson = json.loads(response.text)
+    print(str(responseJson))
     return response
 
 
