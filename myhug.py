@@ -381,6 +381,9 @@ def test_create_card(room_id,headers):
     print(msg)
     #room_id = "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj"
     markdown = msg
+
+    #markdown = "``` This is code test``` {{hello , 'test' }}"
+
     version = "1.0"
 
     area_state_codes_list = []
