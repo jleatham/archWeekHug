@@ -116,7 +116,7 @@ def hello(body):
         print(f'made it to memberships identity={identity}')
         if bot_event == "created" and identity == TEST_EMAIL:
             print("made it to if")
-            test_create_card(room_id,TEST_HEADERS)
+            test_create_card(ss_get_client(os.environ['SMARTSHEET_TOKEN']),room_id,TEST_HEADERS)
     print("Done processing webhook")
 
 
