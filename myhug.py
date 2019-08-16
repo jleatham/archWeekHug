@@ -262,9 +262,9 @@ def test_process_card_inputs(room_id,result,headers,bot_name ):
     data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
     #print(data)
     communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
-    test_create_rerun_card(room_id,result)
+    test_create_rerun_card(room_id,result,headers)
 
-def test_create_rerun_card(room_id,result):
+def test_create_rerun_card(room_id,result,headers):
     markdown = "Resubmit search button"
     version = "1.0"
     state_code = result["state_code"]
