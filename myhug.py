@@ -270,7 +270,7 @@ def test_get_card_msg(data_id, headers):
     return response["inputs"]
 
 def test_create_card(ss_client,room_id,headers):
-    card_payload = '''{ "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj",           
+    card_payload = """{ "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj",           
         
         "markdown": "[Tell us about yourself](https://www.example.com/form/book-vacation). We just need a few more details to get you booked for the trip of a lifetime!",
         "attachments": [
@@ -371,7 +371,7 @@ def test_create_card(ss_client,room_id,headers):
             }
         ]
         }
-    '''                 
+    """                
     
     #ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     #area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
