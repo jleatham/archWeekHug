@@ -114,6 +114,7 @@ def hello(body):
         identity = body["data"]["personEmail"]
         print(f'made it to memberships identity={identity}')
         if bot_event == "created" and identity == TEST_EMAIL:
+            print("made it to if")
             test_create_card(room_id,TEST_HEADERS)
 
 
@@ -207,7 +208,8 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
         ("events",['event','events','-e']),
         ("mobile",['mobile','phone','-m']),
         ("filter",['filter','-f']),
-        ("url_test",['url','-u'])
+        ("url_test",['url','-u']),
+        ("test",['test','-t'])
         #("command alias",["list of possible command entries"])
     ]
     result = command_parse(command_list,command)
@@ -225,7 +227,10 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
         if "url_test" in result:
             print(f"made it to url_test:  {result['url_test']}") 
             url_filter = True
-
+        if "test" in result:
+            print(f"made it to test:  {result['test']}")           
+            test_create_card(room_id,TEST_HEADERS)
+            return
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
         communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
     else:
@@ -428,6 +433,8 @@ def test_create_card(room_id,headers):
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
     response = requests.request("POST", URL, data=test_card_payload, headers=headers)
+    print(test_card_payload)
+    print(response)
     return response
 
 
