@@ -235,7 +235,8 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
         communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
     else:
         #communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=True)    
-        test_create_card(room_id,headers)  
+        #test_create_card(room_id,headers)  
+        return
 
 
               
@@ -373,13 +374,15 @@ def test_create_card(room_id,headers):
     }
                           
     """
-
-    #room_id = "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj"
-    markdown = "This is mark down text [link](www.google.com)"
-    version = "1.0"
     ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     #area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
-    area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+    area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)    
+    msg = format_help_msg(area_dict, 'hugtest')
+
+    #room_id = "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj"
+    markdown = msg
+    version = "1.0"
+
     area_state_codes_list = []
     for area, states in area_dict.items():  
         state_value = " , ".join(states)
@@ -492,14 +495,14 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
             #MULTI-PRINT
             #n = # of events per message. 50 seems to be the limit so setting it to 40 just for some room
             msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="start")
-            response = bot_post_to_room(room_id, msg, headers)
+            bot_post_to_room(room_id, msg, headers)
             n = 40 #how large the data chunk to print
             for i in range(0, len(data), n):
                 data_chunk = data[i:i + n]
                 msg = format_code_print_for_bot(data_chunk,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="data")
-                response = bot_post_to_room(room_id, msg, headers)   
+                bot_post_to_room(room_id, msg, headers)   
             msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="end")
-            response = bot_post_to_room(room_id, msg, headers)                         
+            bot_post_to_room(room_id, msg, headers)                         
 
             msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
             email_filename = generate_email(msg)
@@ -508,20 +511,20 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
             state_list_joined = " ".join(state_filter)
 
             msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE, msg_flag="start")
-            response = bot_post_to_room(room_id, msg, headers)
+            bot_post_to_room(room_id, msg, headers)
 
             n = 40 #how large the data chunk to print
             for i in range(0, len(data), n):
                 data_chunk = data[i:i + n]
                 msg = format_code_print_for_bot_mobile(data_chunk,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="data")
-                response = bot_post_to_room(room_id, msg, headers)   
+                bot_post_to_room(room_id, msg, headers)   
             msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="end")
-            response = bot_post_to_room(room_id, msg, headers)                   
+            bot_post_to_room(room_id, msg, headers)                   
 
     else:
         area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
         msg = format_help_msg(area_dict, bot_name)
-        response = bot_post_to_room(room_id, msg, headers)          
+        bot_post_to_room(room_id, msg, headers)          
 
 
 
