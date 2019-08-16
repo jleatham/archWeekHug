@@ -91,7 +91,7 @@ def hello(body):
         room_id = body["data"]["roomId"]
         identity = test_get_person_from_id(person_id,TEST_HEADERS)
         card_inputs = test_get_card_msg(data_id,TEST_HEADERS)
-        test_process_card_inputs(room_id,card_inputs, TEST_HEADERS, TEST_NME)
+        test_process_card_inputs(room_id,card_inputs, TEST_HEADERS, TEST_NAME)
         print(f"{card_inputs}")
         #test_create_card(room_id,TEST_HEADERS)
 
@@ -458,7 +458,7 @@ def test_create_card(ss_client,room_id,headers):
     )     
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
-    #print(test_card_payload)
+    print(test_card_payload)
     response = requests.request("POST", URL, data=test_card_payload, headers=headers)
     #response = requests.post(URL, data=test_card_payload, headers=headers)
     
