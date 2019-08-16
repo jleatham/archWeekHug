@@ -91,7 +91,7 @@ def hello(body):
         room_id = body["data"]["roomId"]
         identity = test_get_person_from_id(person_id,TEST_HEADERS)
         card_inputs = test_get_card_msg(data_id,TEST_HEADERS)
-        test_process_card_inputs(room_id,card_inputs, TEST_HEADERS)
+        test_process_card_inputs(room_id,card_inputs, TEST_HEADERS, TEST_NME)
         print(f"{card_inputs}")
         #test_create_card(room_id,TEST_HEADERS)
 
@@ -240,6 +240,25 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
         #test_create_card(room_id,headers)  
         return
 
+def test_process_card_inputs(room_id,result,headers,bot_name ):
+    
+    state_filter = []
+    arch_filter = []
+    mobile_filter = False
+    url_filter = False
+    data = []    
+    ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
+    string = result['state_code']
+    #use sanitize string function for this
+    string = string.replace('\xa0','') #an artifact from WebEx sometimes
+    string = string.replace(',',' ') #replace commas with spaces
+    string = ' '.join([w for w in string.split() if len(w)>1]) #remove all characters of length of 1      
+    state_filter = process_state_codes(string.upper(),reverse=False)
+    arch_filter.append(result['filter_flag'])
+
+    data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
+    communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
+  
 
               
 def get_msg_sent_to_bot(msg_id, headers):
@@ -448,8 +467,6 @@ def test_create_card(ss_client,room_id,headers):
     print(str(responseJson))
     return response
 
-def test_process_card_inputs(room_id,card_inputs, TEST_HEADERS):
-    pass
 
 
 def bot_post_to_room(room_id, message, headers):
