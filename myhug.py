@@ -78,7 +78,7 @@ def hello(body):
     """
         Test bot for new features.
     """
-    #print(f"GOT {type(body)}: {repr(body)}")
+    print(f"GOT {type(body)}: {repr(body)}")
     resource = body["resource"]
     bot_event = body["event"]
     print(f'Resource = {resource}    Event = {bot_event}')
@@ -440,7 +440,7 @@ def test_create_card(ss_client,room_id,headers):
     )     
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
-    #print(test_card_payload)
+    print(test_card_payload)
     response = requests.request("POST", URL, data=test_card_payload, headers=headers)
     responseJson = json.loads(response.text)
     print(str(responseJson))
