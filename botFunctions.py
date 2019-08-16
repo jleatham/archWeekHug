@@ -89,7 +89,7 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
 
     if test_flag == True:
         msg = (
-            f"If you see this message, the card did not work right."
+            f"If you see this message, the card did not work right. \\n hello"
         )
         return msg
     else:

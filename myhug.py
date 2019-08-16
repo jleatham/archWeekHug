@@ -91,6 +91,7 @@ def hello(body):
         room_id = body["data"]["roomId"]
         identity = test_get_person_from_id(person_id,TEST_HEADERS)
         card_inputs = test_get_card_msg(data_id,TEST_HEADERS)
+        test_process_card_inputs(room_id,card_inputs, TEST_HEADERS)
         print(f"{card_inputs}")
         #test_create_card(room_id,TEST_HEADERS)
 
@@ -446,6 +447,9 @@ def test_create_card(ss_client,room_id,headers):
     responseJson = json.loads(response.text)
     print(str(responseJson))
     return response
+
+def test_process_card_inputs(room_id,card_inputs, TEST_HEADERS):
+    pass
 
 
 def bot_post_to_room(room_id, message, headers):
