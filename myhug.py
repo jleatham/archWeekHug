@@ -98,7 +98,7 @@ def hello(body):
         room_id = body["data"]["roomId"]
         identity = body["data"]["personEmail"]
         text = body["data"]["id"]
-        print("see POST from {}".format(identity))
+        print("hugtest sees POST from {}".format(identity))
         if identity != TEST_EMAIL:
             print("{}-----{}".format(identity,TEST_EMAIL))
             #command = get_msg_sent_to_bot(text).lower()
@@ -116,6 +116,7 @@ def hello(body):
         if bot_event == "created" and identity == TEST_EMAIL:
             print("made it to if")
             #test_create_card(room_id,TEST_HEADERS)
+    print("Done processing webhook")
 
 
 @hug.post('/events', examples='events')
@@ -421,7 +422,8 @@ def test_create_card(ss_client,room_id,headers):
         f'{{"type": "Input.Text","placeholder": "TX, FL, CA","id": "state_code"}},'
         f'{{"type": "TextBlock","text": "Filter Events by Architecture:","wrap": true}},'        
         f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": false,"value": ""}},'
-        f'{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}]}}]}}'
+        f'{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}'
+        f']}}]}}'
         #mobile support for cards on Roadmap
     )
     test_card_payload = (
