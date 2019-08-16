@@ -78,7 +78,7 @@ def hello(body):
     """
         Test bot for new features.
     """
-    print(f"GOT {type(body)}: {repr(body)}")
+    #print(f"GOT {type(body)}: {repr(body)}")
     resource = body["resource"]
     bot_event = body["event"]
     print(f'Resource = {resource}    Event = {bot_event}')
@@ -253,9 +253,9 @@ def test_process_card_inputs(room_id,result,headers,bot_name ):
     string = string.replace('\xa0','') #an artifact from WebEx sometimes
     string = string.replace(',',' ') #replace commas with spaces
     string = ' '.join([w for w in string.split() if len(w)>1]) #remove all characters of length of 1   
-    print(string)   
+    #print(string)   
     state_filter = process_state_codes(string.upper().split(" "),reverse=False)
-    print(state_filter)
+    #print(state_filter)
     if result['filter_flag']:
         arch_filter.append(result['filter_flag'])
 
@@ -322,7 +322,9 @@ def test_create_rerun_card(room_id,result,headers):
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
     print(test_card_payload)
     response = requests.request("POST", URL, data=test_card_payload, headers=headers)
-              
+    responseJson = json.loads(response.text)
+    print(str(responseJson))
+
 def get_msg_sent_to_bot(msg_id, headers):
     urltext = URL + "/" + msg_id
     payload = ""
@@ -520,13 +522,13 @@ def test_create_card(ss_client,room_id,headers):
     )     
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
-    print(test_card_payload)
+    #print(test_card_payload)
     response = requests.request("POST", URL, data=test_card_payload, headers=headers)
     #response = requests.post(URL, data=test_card_payload, headers=headers)
     
     #response = requests.request("POST", URL, data=json.dumps(card_payload), headers=headers)
     responseJson = json.loads(response.text)
-    print(str(responseJson))
+    #print(str(responseJson))
     return response
 
 
