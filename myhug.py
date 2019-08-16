@@ -419,8 +419,8 @@ def test_create_card(ss_client,room_id,headers):
         f'{{"type": "TextBlock","text": "Enter State Code(s):","wrap": true}},'
         f'{{"type": "Input.Text","placeholder": "TX, FL, CA","id": "state_code"}},'
         f'{{"type": "TextBlock","text": "Filter Events by Architecture:","wrap": true}},'        
-        f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": false,"value": ""}},'
-        #f'{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}'
+        f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": false,"value": ""}}'
+        #f',{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}'
         f']}}]}}'
         #mobile support for cards on Roadmap
     )
