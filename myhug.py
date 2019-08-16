@@ -260,10 +260,68 @@ def test_process_card_inputs(room_id,result,headers,bot_name ):
         arch_filter.append(result['filter_flag'])
 
     data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
-    print(data)
+    #print(data)
     communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
-  
+    test_create_rerun_card(room_id,result)
 
+def test_create_rerun_card(room_id,result):
+    markdown = "Resubmit search button"
+    version = "1.0"
+    state_code = result["state_code"]
+    filter_flag = result["filter_flag"]
+    body = (
+        f'{{"type": "Input.Text","id": "state_code","isVisible": false,"value": {state_code}"}},'
+        f'{{"type": "Input.Text","id": "filter_flag","isVisible": false,"value": {filter_flag}"}}'
+
+        #mobile support for cards on Roadmap
+    )
+
+    test_card_payload = (
+        f'{{'
+        f'"roomId": "{room_id}",'
+        f'"markdown": "{markdown}",'
+        f'"attachments": [{{'
+        f'"contentType": "application/vnd.microsoft.card.adaptive",'
+        f'"content": {{"$schema": "http://adaptivecards.io/schemas/adaptive-card.json","type": "AdaptiveCard",'
+        f'"version": "{version}","body": [{body}],'
+        f'"actions": [{{"type":"Action.Submit","title":"Re-run Same Search"}}]'
+        f'}} }} ] }}'
+    )
+
+
+
+    """
+    {
+        "type": "AdaptiveCard",
+        "body": [
+            {
+                "type": "Input.Text",
+                "id": "state_code",
+                "isVisible": false,
+                "value": "Replace!"
+            },
+            {
+                "type": "Input.Text",
+                "id": "filter_flag",
+                "isVisible": false,
+                "value": "replace"
+            }
+        ],
+        "actions": [
+            {
+                "type": "Action.Submit",
+                "title": "Re-run Same Search"
+            }
+        ],
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "version": "1.0"
+    }
+    """
+         
+    #payload = {"roomId": room_id,"markdown": message}
+    #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
+    print(test_card_payload)
+    response = requests.request("POST", URL, data=test_card_payload, headers=headers)
               
 def get_msg_sent_to_bot(msg_id, headers):
     urltext = URL + "/" + msg_id
