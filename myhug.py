@@ -378,7 +378,7 @@ def test_create_card(room_id,headers):
     #area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
     area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)    
     msg = format_help_msg(area_dict, 'hugtest')
-    print(msg)
+    #print(msg)
     #room_id = "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj"
     markdown = msg
 
@@ -438,9 +438,10 @@ def test_create_card(room_id,headers):
     )     
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
-    response = requests.request("POST", URL, data=test_card_payload, headers=headers)
     print(test_card_payload)
-    print(response)
+    response = requests.request("POST", URL, data=test_card_payload, headers=headers)
+    
+    #print(response)
     return response
 
 
