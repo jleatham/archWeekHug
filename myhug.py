@@ -270,8 +270,8 @@ def test_create_rerun_card(room_id,result,headers):
     state_code = result["state_code"]
     filter_flag = result["filter_flag"]
     body = (
-        f'{{"type": "Input.Text","id": "state_code","isVisible": false,"value": {state_code}"}},'
-        f'{{"type": "Input.Text","id": "filter_flag","isVisible": false,"value": {filter_flag}"}}'
+        f'{{"type": "Input.Text","id": "state_code","isVisible": false,"value": "{state_code}"}},'
+        f'{{"type": "Input.Text","id": "filter_flag","isVisible": false,"value": "{filter_flag}"}}'
 
         #mobile support for cards on Roadmap
     )
