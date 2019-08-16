@@ -229,7 +229,7 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
             url_filter = True
         if "test" in result:
             print(f"made it to test:  {result['test']}")           
-            test_create_card(room_id,TEST_HEADERS)
+            test_create_card(ss_client,room_id,TEST_HEADERS)
             return
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
         communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
@@ -268,7 +268,7 @@ def test_get_card_msg(data_id, headers):
     print ("Message to bot : {}".format(response))
     return response["inputs"]
 
-def test_create_card(room_id,headers):
+def test_create_card(ss_client,room_id,headers):
     card_payload = """
                            
     {
@@ -374,7 +374,7 @@ def test_create_card(room_id,headers):
     }
                           
     """
-    ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
+    #ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     #area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
     area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)    
     msg = format_help_msg(area_dict, 'hugtest')
