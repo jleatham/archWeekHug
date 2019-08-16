@@ -79,40 +79,54 @@ def get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = 
     return area_dict
 
 
-def format_help_msg(area_dict, bot_name):
+def format_help_msg(area_dict, bot_name, test_flag=False):
     """
         Takes area_dict from above and formats the output using markdown codeblocks(```)
         area_dict looks like: {"south":["TX","AR","NC",etc],"west":["CA","OR",etc]} so need
         to join the states list into a string
         The markdown is also joined to a single string and returned to be printed
     """
-    msg_list = []
-    
 
-    
-    msg_list.append("``` \n\n")
-    msg_list.append("{:<15}: {}  \n".format('Area', 'State Codes'))
-    msg_list.append("{:*<15}: {:*<60}  \n".format('', ''))
-    for area, states in area_dict.items():
-        msg_list.append("{:<15}: {}  \n".format(area, ' , '.join(states)))
-    msg_list.append("  \nCreated by:")
-    msg_list.append("  \nMinh Nguyen (minhngu2) and Josh Leatham (jleatham) from Commercial South Area")
-    msg_list.append("  \n``` \n\n")
-    msg_list.append(" # Commands for bot:  \n")
-    msg_list.append("Commands structure: {events} . . . {filter} . . . {mobile}  \n")
-    msg_list.append("events|-e - -> state_code  \n")
-    msg_list.append("filter|-f - -> architectures you want to see  \n")
-    msg_list.append("mobile|-m - -> formats events to display on mobile  \n")
-    msg_list.append(" # Select State code from above  \n")
-    #add if else for whether bot is in space or 1 on 1.  No need for @ if 1 on 1
-    msg_list.append("Remove the @{} when not in multi-user space (i.e., 1 on 1)  \n".format(bot_name))
-    msg_list.append("Example:  @{} **events TX**  \n".format(bot_name))
-    msg_list.append("Example:  @{} **events CA NV WA**  \n".format(bot_name))    
-    msg_list.append("Example:  @{} events CA NV WA filter sec  \n".format(bot_name))   
-    msg_list.append("Example:  @{} -e TX -f collab  \n".format(bot_name)) 
-    msg_list.append("Example:  @{} -events TX mobile  \n".format(bot_name)) 
-    msg = ''.join(msg_list)
-    return msg
+    if test_flag == True:
+        msg_list = []
+        msg_list.append("``` \n\n")
+        msg_list.append("{:<15}: {}  \n".format('Area', 'State Codes'))
+        msg_list.append("{:*<15}: {:*<60}  \n".format('', ''))
+        for area, states in area_dict.items():
+            msg_list.append("{:<15}: {}  \n".format(area, ' , '.join(states)))
+        msg_list.append("  \nCreated by:")
+        msg_list.append("  \nMinh Nguyen (minhngu2) and Josh Leatham (jleatham) from Commercial South Area")
+        msg_list.append("  \n``` \n\n")
+        msg = ''.join(msg_list)
+        return msg
+    else:
+        msg_list = []
+        
+
+        
+        msg_list.append("``` \n\n")
+        msg_list.append("{:<15}: {}  \n".format('Area', 'State Codes'))
+        msg_list.append("{:*<15}: {:*<60}  \n".format('', ''))
+        for area, states in area_dict.items():
+            msg_list.append("{:<15}: {}  \n".format(area, ' , '.join(states)))
+        msg_list.append("  \nCreated by:")
+        msg_list.append("  \nMinh Nguyen (minhngu2) and Josh Leatham (jleatham) from Commercial South Area")
+        msg_list.append("  \n``` \n\n")
+        msg_list.append(" # Commands for bot:  \n")
+        msg_list.append("Commands structure: \{events\} . . . \{filter\} . . . \{mobile\}  \n")
+        msg_list.append("events|-e - -> state_code  \n")
+        msg_list.append("filter|-f - -> architectures you want to see  \n")
+        msg_list.append("mobile|-m - -> formats events to display on mobile  \n")
+        msg_list.append(" # Select State code from above  \n")
+        #add if else for whether bot is in space or 1 on 1.  No need for @ if 1 on 1
+        msg_list.append("Remove the @{} when not in multi-user space (i.e., 1 on 1)  \n".format(bot_name))
+        msg_list.append("Example:  @{} **events TX**  \n".format(bot_name))
+        msg_list.append("Example:  @{} **events CA NV WA**  \n".format(bot_name))    
+        msg_list.append("Example:  @{} events CA NV WA filter sec  \n".format(bot_name))   
+        msg_list.append("Example:  @{} -e TX -f collab  \n".format(bot_name)) 
+        msg_list.append("Example:  @{} -events TX mobile  \n".format(bot_name)) 
+        msg = ''.join(msg_list)
+        return msg
 
 def get_all_data_and_filter(ss_client,sheet_id,state,arch_filter=False,url_filter=False,column_filter_list = []):
     """
