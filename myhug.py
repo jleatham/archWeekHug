@@ -253,10 +253,11 @@ def test_process_card_inputs(room_id,result,headers,bot_name ):
     string = string.replace('\xa0','') #an artifact from WebEx sometimes
     string = string.replace(',',' ') #replace commas with spaces
     string = ' '.join([w for w in string.split() if len(w)>1]) #remove all characters of length of 1      
-    state_filter = process_state_codes(string.upper(),reverse=False)
+    state_filter = process_state_codes(string.upper().split(" "),reverse=False)
     arch_filter.append(result['filter_flag'])
 
     data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
+    print(data)
     communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
   
 
