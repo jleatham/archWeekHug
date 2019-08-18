@@ -545,7 +545,7 @@ def test_create_card(ss_client,room_id,headers):
     )     
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
-    #print(test_card_payload)
+    print(test_card_payload)
     response = requests.request("POST", URL, data=test_card_payload, headers=headers)
     #response = requests.post(URL, data=test_card_payload, headers=headers)
     
