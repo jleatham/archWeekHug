@@ -89,6 +89,7 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
 
     if test_flag == True:
         msg_list = []
+        '''
         msg_list.append("``` \\n\\n")
         msg_list.append("{:<15}: {}  \\n".format('Area', 'State Codes'))
         msg_list.append("{:*<15}: {:*<60}  \\n".format('', ''))
@@ -113,7 +114,7 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
         msg_list.append("Example:  @{} events CA NV WA filter sec  \\n".format(bot_name))   
         msg_list.append("Example:  @{} -e TX -f collab  \\n".format(bot_name)) 
         msg_list.append("Example:  @{} -events TX mobile  \\n".format(bot_name)) 
-        '''
+        
         msg = ''.join(msg_list)
         return msg
     else:
