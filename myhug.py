@@ -248,30 +248,36 @@ def test_process_card_inputs(room_id,result,headers,bot_name ):
     url_filter = False
     data = []    
     ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
-    string = result['state_code']
-    #use sanitize string function for this
-    string = string.replace('\xa0','') #an artifact from WebEx sometimes
-    string = string.replace(',',' ') #replace commas with spaces
-    string = ' '.join([w for w in string.split() if len(w)>1]) #remove all characters of length of 1   
-    #print(string)   
-    state_filter = process_state_codes(string.upper().split(" "),reverse=False)
-    #print(state_filter)
-    if result['filter_flag']:
-        arch_filter.append(result['filter_flag'])
+    if "create" in result["button_choice"]:
+        test_create_card(ss_client,room_id,headers)
+    else:
+        string = result['state_code']
+        #use sanitize string function for this
+        string = string.replace('\xa0','') #an artifact from WebEx sometimes
+        string = string.replace(',',' ') #replace commas with spaces
+        string = ' '.join([w for w in string.split() if len(w)>1]) #remove all characters of length of 1   
+        #print(string)   
+        state_filter = process_state_codes(string.upper().split(" "),reverse=False)
+        #print(state_filter)
+        if result['filter_flag']:
+            arch_filter.append(result['filter_flag'])
 
-    data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
-    #print(data)
-    communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
-    test_create_rerun_card(room_id,result,headers)
+        data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
+        #print(data)
+        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
+        test_create_rerun_card(room_id,result,headers)
 
 def test_create_rerun_card(room_id,result,headers):
     markdown = "Resubmit search button"
     version = "1.0"
     state_code = result["state_code"]
     filter_flag = result["filter_flag"]
+    old_msg_ids = "" #in case I want to delete old messages upon each rerun
     body = (
         f'{{"type": "Input.Text","id": "state_code","isVisible": false,"value": "{state_code}"}},'
-        f'{{"type": "Input.Text","id": "filter_flag","isVisible": false,"value": "{filter_flag}"}}'
+        f'{{"type": "Input.Text","id": "filter_flag","isVisible": false,"value": "{filter_flag}"}},'
+        f'{{"type": "Input.Text","id": "old_msg_ids","isVisible": false,"value": "{old_msg_ids}"}},'
+        f'{{"type": "Input.ChoiceSet","choices": [{{"title": "Re-Run Same Search","value": "rerun"}},{{"title": "Start New Search","value": "create"}}],"id": "button_choice","value": "rerun"}}'
 
         #mobile support for cards on Roadmap
     )
@@ -284,15 +290,13 @@ def test_create_rerun_card(room_id,result,headers):
         f'"contentType": "application/vnd.microsoft.card.adaptive",'
         f'"content": {{"$schema": "http://adaptivecards.io/schemas/adaptive-card.json","type": "AdaptiveCard",'
         f'"version": "{version}","body": [{body}],'
-        f'"actions": [{{"type":"Action.Submit","title":"Re-run Same Search"}}]'
+        f'"actions": [{{"type":"Action.Submit","title":"Submit"}}]'
         f'}} }} ] }}'
     )
 
 
 
     """
-    {
-        "type": "AdaptiveCard",
         "body": [
             {
                 "type": "Input.Text",
@@ -305,17 +309,35 @@ def test_create_rerun_card(room_id,result,headers):
                 "id": "filter_flag",
                 "isVisible": false,
                 "value": "replace"
+            },
+            {
+                "type": "Input.Text",
+                "id": "old_msg_ids",
+                "isVisible": false,
+                "value": "replace"
+            },
+            {
+                "type": "Input.ChoiceSet",
+                "choices": [
+                    {
+                        "title": "Re-Run Same Search",
+                        "value": "rerun"
+                    },
+                    {
+                        "title": "Start New Search",
+                        "value": "create"
+                    }
+                ],
+                "id": "button_choice",
+                "value": "rerun"
             }
         ],
         "actions": [
             {
                 "type": "Action.Submit",
-                "title": "Re-run Same Search"
+                "title": "Submit"
             }
-        ],
-        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-        "version": "1.0"
-    }
+        ]
     """
          
     #payload = {"roomId": room_id,"markdown": message}
@@ -503,7 +525,8 @@ def test_create_card(ss_client,room_id,headers):
         f'{{"type": "TextBlock","text": "Enter State Code(s):","wrap": true}},'
         f'{{"type": "Input.Text","placeholder": "TX, FL, CA","id": "state_code"}},'
         f'{{"type": "TextBlock","text": "Filter Events by Architecture:","wrap": true}},'        
-        f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": false,"value": ""}}'
+        f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": false,"value": ""}},'
+        f'{{"type": "Input.Text","id": "button_choice","isVisible": false,"value": "new"}}'
         #f',{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}'
         f']}}]}}'
         #mobile support for cards on Roadmap
