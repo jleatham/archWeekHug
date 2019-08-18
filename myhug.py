@@ -241,7 +241,7 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
         return
 
 def test_process_card_inputs(room_id,result,headers,bot_name ):
-    
+    msg_ids_list = []
     state_filter = []
     arch_filter = []
     mobile_filter = False
@@ -264,14 +264,16 @@ def test_process_card_inputs(room_id,result,headers,bot_name ):
 
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
         #print(data)
-        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
-        test_create_rerun_card(room_id,result,headers)
+        msg_ids_list = communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
 
-def test_create_rerun_card(room_id,result,headers):
+        test_create_rerun_card(room_id,result,headers,msg_ids_list)
+
+def test_create_rerun_card(room_id,result,headers,msg_ids_list=[]):
     markdown = "Resubmit search button"
     version = "1.0"
     state_code = result["state_code"]
     filter_flag = result["filter_flag"]
+    print(msg_ids_list)
     old_msg_ids = "" #in case I want to delete old messages upon each rerun
     body = (
         f'{{"type": "Input.Text","id": "state_code","isVisible": false,"value": "{state_code}"}},'
@@ -658,14 +660,17 @@ def test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filte
             #MULTI-PRINT
             #n = # of events per message. 50 seems to be the limit so setting it to 40 just for some room
             msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="start")
-            bot_post_to_room(room_id, msg, headers)
+            response = bot_post_to_room(room_id, msg, headers)
+            msg_ids_list.append(response["id"])
             n = 40 #how large the data chunk to print
             for i in range(0, len(data), n):
                 data_chunk = data[i:i + n]
                 msg = format_code_print_for_bot(data_chunk,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="data")
-                bot_post_to_room(room_id, msg, headers)   
+                response = bot_post_to_room(room_id, msg, headers)   
+                msg_ids_list.append(response["id"])
             msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="end")
-            bot_post_to_room(room_id, msg, headers)                         
+            response = bot_post_to_room(room_id, msg, headers)  
+            msg_ids_list.append(response["id"])                       
 
             msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
             email_filename = generate_email(msg)
@@ -674,20 +679,26 @@ def test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filte
             state_list_joined = " ".join(state_filter)
 
             msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE, msg_flag="start")
-            bot_post_to_room(room_id, msg, headers)
+            response = bot_post_to_room(room_id, msg, headers)
+            msg_ids_list.append(response["id"])
 
             n = 40 #how large the data chunk to print
             for i in range(0, len(data), n):
                 data_chunk = data[i:i + n]
                 msg = format_code_print_for_bot_mobile(data_chunk,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="data")
-                bot_post_to_room(room_id, msg, headers)   
+                response = bot_post_to_room(room_id, msg, headers)  
+                msg_ids_list.append(response["id"]) 
             msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="end")
-            bot_post_to_room(room_id, msg, headers)                   
+            response = bot_post_to_room(room_id, msg, headers) 
+            msg_ids_list.append(response["id"])                  
 
     else:
-        area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
-        msg = format_help_msg(area_dict, bot_name)
-        bot_post_to_room(room_id, msg, headers)          
+        #area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+        #msg = format_help_msg(area_dict, bot_name)
+        #bot_post_to_room(room_id, msg, headers)    
+        response = test_create_card(ss_client,room_id,headers)    
+        msg_ids_list.append(response["id"])
+    return msg_ids_list  
 
 
 
