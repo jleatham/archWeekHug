@@ -91,7 +91,7 @@ def hello(body):
         room_id = body["data"]["roomId"]
         identity = test_get_person_from_id(person_id,TEST_HEADERS)
         card_inputs = test_get_card_msg(data_id,TEST_HEADERS)
-        test_process_card_inputs(room_id,card_inputs, TEST_HEADERS, TEST_NAME)
+        test_process_card_inputs(room_id,card_inputs,card_id, TEST_HEADERS, TEST_NAME)
         print(f"{card_inputs}")
         #test_create_card(room_id,TEST_HEADERS)
 
@@ -240,13 +240,17 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
         #test_create_card(room_id,headers)  
         return
 
-def test_process_card_inputs(room_id,result,headers,bot_name ):
+def test_process_card_inputs(room_id,result,card_id,headers,bot_name ):
     msg_ids_list = []
+    msg_ids_list.append(card_id)
+
+    msg_ids_list = msg_ids_list + result["old_msg_ids"].split(",")
     state_filter = []
     arch_filter = []
     mobile_filter = False
     url_filter = False
     data = []    
+    remove_old_msgs(room_id,msg_ids_list,headers)
     ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     if "create" in result["button_choice"]:
         test_create_card(ss_client,room_id,headers)
@@ -264,17 +268,26 @@ def test_process_card_inputs(room_id,result,headers,bot_name ):
 
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
         #print(data)
+        msg_ids_list = []
         msg_ids_list = test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
-
         test_create_rerun_card(room_id,result,headers,msg_ids_list)
+
+def remove_old_msgs(room_id,msg_ids_list,headers):
+    payload = ""
+    for id in msg_ids_list:
+        url = f"https://api.ciscospark.com/v1/messages/{id}"
+        response = requests.request("DELETE", url, data=payload, headers=headers)
+        print(response.text)
 
 def test_create_rerun_card(room_id,result,headers,msg_ids_list=[]):
     markdown = "Resubmit search button"
     version = "1.0"
     state_code = result["state_code"]
     filter_flag = result["filter_flag"]
+    old_msg_ids = ",".join(msg_ids_list)
+    
     print(msg_ids_list)
-    old_msg_ids = "" #in case I want to delete old messages upon each rerun
+    
     body = (
         f'{{"type": "Input.Text","id": "state_code","isVisible": false,"value": "{state_code}"}},'
         f'{{"type": "Input.Text","id": "filter_flag","isVisible": false,"value": "{filter_flag}"}},'
@@ -528,6 +541,7 @@ def test_create_card(ss_client,room_id,headers):
         f'{{"type": "Input.Text","placeholder": "TX, FL, CA","id": "state_code"}},'
         f'{{"type": "TextBlock","text": "Filter Events by Architecture:","wrap": true}},'        
         f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": false,"value": ""}},'
+        f'{{"type": "Input.Text","id": "old_msg_ids","isVisible": false,"value": ""}},'
         f'{{"type": "Input.Text","id": "button_choice","isVisible": false,"value": "new"}}'
         #f',{{"type": "Input.Toggle","title": "Mobile?","value": "false","wrap": false,"id" : "mobile_flag"}}'
         f']}}]}}'
