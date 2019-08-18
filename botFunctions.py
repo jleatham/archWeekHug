@@ -99,6 +99,7 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
         msg_list.append("  \\n``` \\n\\n")
         msg_list.append(" # Commands for bot:  \\n")
         msg_list.append("Commands structure: events . . . filter . . . mobile  \\n")
+        '''
         msg_list.append(" ### Examples:  \\n")
         msg_list.append("events|-e - -> state_code  \\n")
         msg_list.append("filter|-f - -> architectures you want to see  \\n")
@@ -111,6 +112,7 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
         msg_list.append("Example:  @{} events CA NV WA filter sec  \\n".format(bot_name))   
         msg_list.append("Example:  @{} -e TX -f collab  \\n".format(bot_name)) 
         msg_list.append("Example:  @{} -events TX mobile  \\n".format(bot_name)) 
+        '''
         msg = ''.join(msg_list)
         return msg
     else:
