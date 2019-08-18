@@ -567,7 +567,9 @@ def bot_post_to_room(room_id, message, headers):
         user_input = "some test message for the moment"
         #send to the DEVs bot room
         error_handling(response,response.status_code,user_input,room_id,headers)
-
+    responseJson = json.loads(response.text)
+    print(str(responseJson))
+    return responseJson
 
 
 def error_handling(response,err_code,user_input,room_id,headers):
@@ -643,6 +645,7 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
 
 
 def test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter=False,url_filter=False,help=False):
+    msg_ids_list = []
     if not help:
         if url_filter:
             #do something
