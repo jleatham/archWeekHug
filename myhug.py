@@ -83,7 +83,7 @@ def hello(body):
     bot_event = body["event"]
     print(f'Resource = {resource}    Event = {bot_event}')
     if resource == "attachmentActions":
-        card_id = body["id"]
+        card_id = body["data"]["messageId"]
         app_id = body["appId"]
         actor_id = body["actorId"]
         data_id = body["data"]["id"]
