@@ -89,16 +89,20 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
 
     if test_flag == True:
         msg_list = []
-        '''
+        
         msg_list.append("``` \\n\\n")
+        '''
         msg_list.append("{:<15}: {}  \\n".format('Area', 'State Codes'))
         msg_list.append("{:*<15}: {:*<60}  \\n".format('', ''))
         for area, states in area_dict.items():
             msg_list.append("{:<15}: {}  \\n".format(area, ' , '.join(states)))
         msg_list.append("  \\nCreated by:")
         msg_list.append("  \\nMinh Nguyen (minhngu2) and Josh Leatham (jleatham) from Commercial South Area")
-        msg_list.append("  \\n``` \\n\\n")
         '''
+        msg_list.append("Example code statement \\n")
+        msg_list.append("Example code statement \\n")
+        msg_list.append("  \\n``` \\n\\n")
+        
         msg_list.append(" # Commands for bot:  \\n")
         msg_list.append("Commands structure: events . . . filter . . . mobile  \\n")
         
