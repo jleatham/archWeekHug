@@ -642,5 +642,49 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
         bot_post_to_room(room_id, msg, headers)          
 
 
+def test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter=False,url_filter=False,help=False):
+    if not help:
+        if url_filter:
+            #do something
+            for i in data:
+                if i["url"]:
+                    print(f"{i['Event Name']}   {i['url']} ")
+        if not mobile_filter:
+            state_list_joined = " ".join(state_filter)
+
+            #MULTI-PRINT
+            #n = # of events per message. 50 seems to be the limit so setting it to 40 just for some room
+            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="start")
+            bot_post_to_room(room_id, msg, headers)
+            n = 40 #how large the data chunk to print
+            for i in range(0, len(data), n):
+                data_chunk = data[i:i + n]
+                msg = format_code_print_for_bot(data_chunk,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="data")
+                bot_post_to_room(room_id, msg, headers)   
+            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="end")
+            bot_post_to_room(room_id, msg, headers)                         
+
+            msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
+            email_filename = generate_email(msg)
+            response = bot_send_email(room_id,email_filename)  
+        else:
+            state_list_joined = " ".join(state_filter)
+
+            msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE, msg_flag="start")
+            bot_post_to_room(room_id, msg, headers)
+
+            n = 40 #how large the data chunk to print
+            for i in range(0, len(data), n):
+                data_chunk = data[i:i + n]
+                msg = format_code_print_for_bot_mobile(data_chunk,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="data")
+                bot_post_to_room(room_id, msg, headers)   
+            msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="end")
+            bot_post_to_room(room_id, msg, headers)                   
+
+    else:
+        area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+        msg = format_help_msg(area_dict, bot_name)
+        bot_post_to_room(room_id, msg, headers)          
+
 
 
