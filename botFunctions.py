@@ -97,9 +97,10 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
         msg_list.append("  \\nCreated by:")
         msg_list.append("  \\nMinh Nguyen (minhngu2) and Josh Leatham (jleatham) from Commercial South Area")
         msg_list.append("  \\n``` \\n\\n")
+        '''
         msg_list.append(" # Commands for bot:  \\n")
         msg_list.append("Commands structure: events . . . filter . . . mobile  \\n")
-        '''
+        
         msg_list.append(" ### Examples:  \\n")
         msg_list.append("events|-e - -> state_code  \\n")
         msg_list.append("filter|-f - -> architectures you want to see  \\n")
