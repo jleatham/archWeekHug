@@ -568,7 +568,7 @@ def test_create_card(ss_client,room_id,headers):
     #response = requests.request("POST", URL, data=json.dumps(card_payload), headers=headers)
     responseJson = json.loads(response.text)
     print(str(responseJson))
-    return response
+    return responseJson
 
 
 
