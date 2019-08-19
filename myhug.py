@@ -234,9 +234,9 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
             test_create_card(ss_client,room_id,TEST_HEADERS)
             return
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
-        test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
+        test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
     else:
-        test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=True)    
+        test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=True)    
         #test_create_card(room_id,headers)  
         return
 
@@ -269,7 +269,7 @@ def test_process_card_inputs(room_id,result,card_id,headers,bot_name ):
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
         #print(data)
         msg_ids_list = []
-        msg_ids_list = test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
+        msg_ids_list = test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
         test_create_rerun_card(room_id,result,headers,msg_ids_list)
 
 def remove_old_msgs(room_id,msg_ids_list,headers):
@@ -714,5 +714,63 @@ def test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filte
         msg_ids_list.append(response["id"])
     return msg_ids_list  
 
+def test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=False):
+    msg_ids_list = []
+    if not help:
+        if url_filter:
+            #do something
+            for i in data:
+                if i["url"]:
+                    print(f"{i['Event Name']}   {i['url']} ")
+        else:
+
+            ###Mobile Print####
+            state_list_joined = " ".join(state_filter)
+
+            msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE, msg_flag="start")
+            response = bot_post_to_room(room_id, msg, headers)
+            msg_ids_list.append(response["id"])
+
+            n = 40 #how large the data chunk to print
+            for i in range(0, len(data), n):
+                data_chunk = data[i:i + n]
+                msg = format_code_print_for_bot_mobile(data_chunk,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="data")
+                response = bot_post_to_room(room_id, msg, headers)  
+                msg_ids_list.append(response["id"]) 
+            msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="end")
+            response = bot_post_to_room(room_id, msg, headers) 
+            msg_ids_list.append(response["id"])                  
+
+
+            ###Code print#####
+            state_list_joined = " ".join(state_filter)
+
+            #MULTI-PRINT
+            #n = # of events per message. 50 seems to be the limit so setting it to 40 just for some room
+            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="start")
+            response = bot_post_to_room(room_id, msg, headers)
+            msg_ids_list.append(response["id"])
+            n = 40 #how large the data chunk to print
+            for i in range(0, len(data), n):
+                data_chunk = data[i:i + n]
+                msg = format_code_print_for_bot(data_chunk,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="data")
+                response = bot_post_to_room(room_id, msg, headers)   
+                msg_ids_list.append(response["id"])
+            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="end")
+            response = bot_post_to_room(room_id, msg, headers)  
+            msg_ids_list.append(response["id"])                       
+
+            #msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
+            #email_filename = generate_email(msg)
+            #response = bot_send_email(room_id,email_filename)  
+
+
+    else:
+        #area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
+        #msg = format_help_msg(area_dict, bot_name)
+        #bot_post_to_room(room_id, msg, headers)    
+        response = test_create_card(ss_client,room_id,headers)    
+        msg_ids_list.append(response["id"])
+    return msg_ids_list  
 
 
