@@ -234,9 +234,9 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
             test_create_card(ss_client,room_id,TEST_HEADERS)
             return
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
-        test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
+        test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=False)
     else:
-        test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=True)    
+        test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=True)    
         #test_create_card(room_id,headers)  
         return
 
@@ -269,7 +269,7 @@ def test_process_card_inputs(room_id,result,card_id,headers,bot_name ):
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
         #print(data)
         msg_ids_list = []
-        msg_ids_list = test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=False)
+        msg_ids_list = test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=False)
         test_create_rerun_card(room_id,result,headers,msg_ids_list)
 
 def remove_old_msgs(room_id,msg_ids_list,headers):
