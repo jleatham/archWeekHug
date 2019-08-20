@@ -86,7 +86,7 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
         to join the states list into a string
         The markdown is also joined to a single string and returned to be printed
     """
-
+    ### cards API send markdown as part of JSON, needs to be formatted slightly different
     if test_flag == True:
         msg_list = []
         
@@ -95,10 +95,13 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
         msg_list.append("{:<15}: {}  \\n".format('Area', 'State Codes'))
         
         msg_list.append("{:*<15}: {:*<60}  \\n".format('', ''))
-        '''
+        
         for area, states in area_dict.items():
-            msg_list.append("{:<15}: {}  \\n".format(area, ' , '.join(states)))
-        '''
+            #need to / out the quotes per state code
+            state_string = " , ".join(states)
+            print(state_string)
+            msg_list.append("{:<15}: {}  \\n".format(area, state_string))
+        
         msg_list.append("  \\nCreated by:")
         msg_list.append("  \\nMinh Nguyen (minhngu2) and Josh Leatham (jleatham) from Commercial South Area")
         
