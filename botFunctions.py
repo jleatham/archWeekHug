@@ -79,7 +79,7 @@ def get_all_areas_and_associated_states(ss_client,sheet_id,column_filter_list = 
     return area_dict
 
 
-def format_help_msg(area_dict, bot_name, test_flag=False):
+def format_help_msg(area_dict, bot_name, card_flag=False):
     """
         Takes area_dict from above and formats the output using markdown codeblocks(```)
         area_dict looks like: {"south":["TX","AR","NC",etc],"west":["CA","OR",etc]} so need
@@ -87,7 +87,7 @@ def format_help_msg(area_dict, bot_name, test_flag=False):
         The markdown is also joined to a single string and returned to be printed
     """
     ### cards API send markdown as part of JSON, needs to be formatted slightly different
-    if test_flag == True:
+    if card_flag == True:
         msg_list = []
         
         msg_list.append("``` \\n\\n")

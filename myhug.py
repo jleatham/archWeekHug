@@ -18,6 +18,9 @@ from botFunctions import command_parse, sanitize_commands, process_state_codes, 
 
 
 URL = "https://api.ciscospark.com/v1/messages"
+PERSON_URL = "https://api.ciscospark.com/v1/people"
+CARD_MSG_URL = "https://api.ciscospark.com/v1/attachment/actions"
+
 TEST_HEADERS = {
     'Authorization': os.environ['BOT_TOKEN'],
     'Content-Type': "application/json",
@@ -29,8 +32,7 @@ EVENTS_HEADERS = {
     'cache-control': "no-cache"
 }
 
-TEST_PERSON_URL = "https://api.ciscospark.com/v1/people"
-TEST_CARD_MSG_URL = "https://api.ciscospark.com/v1/attachment/actions"
+
 
 '''
 CARDS example
@@ -78,6 +80,9 @@ def hello(body):
     """
         Test bot for new features.
     """
+    email = TEST_EMAIL
+    headers = TEST_HEADERS
+    name = TEST_NAME
     #print(f"GOT {type(body)}: {repr(body)}")
     resource = body["resource"]
     bot_event = body["event"]
@@ -89,34 +94,34 @@ def hello(body):
         data_id = body["data"]["id"]
         person_id = body["data"]["personId"]
         room_id = body["data"]["roomId"]
-        identity = test_get_person_from_id(person_id,TEST_HEADERS)
-        card_inputs = test_get_card_msg(data_id,TEST_HEADERS)
-        test_process_card_inputs(room_id,card_inputs,card_id, TEST_HEADERS, TEST_NAME)
+        identity = get_person_from_id(person_id,headers)
+        card_inputs = get_card_msg(data_id,headers)
+        process_card_inputs(room_id,card_inputs,card_id, headers, name)
         print(f"{card_inputs}")
-        #test_create_card(room_id,TEST_HEADERS)
+        #create_card(room_id,headers)
 
     elif resource == "messages":
         room_id = body["data"]["roomId"]
         identity = body["data"]["personEmail"]
         text = body["data"]["id"]
         print("hugtest sees POST from {}".format(identity))
-        if identity != TEST_EMAIL:
-            print("{}-----{}".format(identity,TEST_EMAIL))
+        if identity != email:
+            print("{}-----{}".format(identity,email))
             #command = get_msg_sent_to_bot(text).lower()
-            command = get_msg_sent_to_bot(text, TEST_HEADERS)
-            command = (command.replace(TEST_NAME, '')).strip()
+            command = get_msg_sent_to_bot(text, headers)
+            command = (command.replace(name, '')).strip()
             command = (command.replace('@', '')).strip()
             command = command.lower()  #added this, don't forget to move to events-bot as well
             print("stripped command: {}".format(command))
-            test_process_bot_input_command(room_id,command, TEST_HEADERS, TEST_NAME)
-            #send_log_to_ss(TEST_NAME,str(datetime.now()),identity,command,room_id)
+            process_bot_input_command(room_id,command, headers, name)
+            #send_log_to_ss(name,str(datetime.now()),identity,command,room_id)
     elif resource == "memberships":
         room_id = body["data"]["roomId"]
         identity = body["data"]["personEmail"]
         print(f'made it to memberships identity={identity}')
-        if bot_event == "created" and identity == TEST_EMAIL:
+        if bot_event == "created" and identity == email:
             print("made it to if")
-            test_create_card(ss_get_client(os.environ['SMARTSHEET_TOKEN']),room_id,TEST_HEADERS)
+            create_card(ss_get_client(os.environ['SMARTSHEET_TOKEN']),room_id,headers)
     print("Done processing webhook")
 
 
@@ -131,26 +136,75 @@ def events(body):
 
         Future: regex search identity for domain verification
     """
+    email = EVENTS_EMAIL
+    headers = EVENTS_HEADERS
+    name = EVENTS_NAME    
+    #print(f"GOT {type(body)}: {repr(body)}")
+    resource = body["resource"]
+    bot_event = body["event"]
+    print(f'Resource = {resource}    Event = {bot_event}')
+    if resource == "attachmentActions":
+        card_id = body["data"]["messageId"]
+        app_id = body["appId"]
+        actor_id = body["actorId"]
+        data_id = body["data"]["id"]
+        person_id = body["data"]["personId"]
+        room_id = body["data"]["roomId"]
+        identity = get_person_from_id(person_id,headers)
+        card_inputs = get_card_msg(data_id,headers)
+        process_card_inputs(room_id,card_inputs,card_id, headers, name)
+        print(f"{card_inputs}")
+        send_log_to_ss(name,str(datetime.now()),identity,f"card processed: {card_inputs['state_code']}",room_id)
+        #create_card(room_id,headers)
+
+    elif resource == "messages":
+        room_id = body["data"]["roomId"]
+        identity = body["data"]["personEmail"]
+        text = body["data"]["id"]
+        print("hugtest sees POST from {}".format(identity))
+        if identity != email:
+            print("{}-----{}".format(identity,email))
+            #command = get_msg_sent_to_bot(text).lower()
+            command = get_msg_sent_to_bot(text, headers)
+            command = (command.replace(name, '')).strip()
+            command = (command.replace('@', '')).strip()
+            command = command.lower()  #added this, don't forget to move to events-bot as well
+            print("stripped command: {}".format(command))
+            process_bot_input_command(room_id,command, headers, name)
+            send_log_to_ss(name,str(datetime.now()),identity,command,room_id)
+    elif resource == "memberships":
+        room_id = body["data"]["roomId"]
+        identity = body["data"]["personEmail"]
+        print(f'made it to memberships identity={identity}')
+        if bot_event == "created" and identity == email:
+            print("made it to if")
+            create_card(ss_get_client(os.environ['SMARTSHEET_TOKEN']),room_id,headers)
+            send_log_to_ss(name,str(datetime.now()),identity,"new room: card created",room_id)
+    print("Done processing webhook")
+
+
+
+    '''
     #print("GOT {}: {}".format(type(body), repr(body)))
     room_id = body["data"]["roomId"]
     identity = body["data"]["personEmail"]
     text = body["data"]["id"]
     print("see POST from {}".format(identity))
-    if identity != EVENTS_EMAIL:
-        print("{}-----{}".format(identity,EVENTS_EMAIL))
+    if identity != email:
+        print("{}-----{}".format(identity,email))
         #command = get_msg_sent_to_bot(text).lower()
-        command = get_msg_sent_to_bot(text, EVENTS_HEADERS)
-        command = (command.replace(EVENTS_NAME, '')).strip()
+        command = get_msg_sent_to_bot(text, headers)
+        command = (command.replace(name, '')).strip()
         command = (command.replace('EVENT-TBD', '')).strip() #temp due to typo
         command = (command.replace('@', '')).strip()
         command = command.lower()
         print("stripped command: {}".format(command))
-        process_bot_input_command(room_id,command, EVENTS_HEADERS, EVENTS_NAME)
-        send_log_to_ss(EVENTS_NAME,str(datetime.now()),identity,command,room_id)
+        process_bot_input_command(room_id,command, headers, name)
+        send_log_to_ss(name,str(datetime.now()),identity,command,room_id)
+    '''
 
 
-
-def process_bot_input_command(room_id,command, headers, bot_name):
+def old_process_bot_input_command(room_id,command, headers, bot_name):
     """ 
         Provides a few different command options based in different lists. (commands should be lower case)
         Combines all lists together and checks if any keyword commands are detected...basically a manually created case/switch statement
@@ -192,7 +246,7 @@ def process_bot_input_command(room_id,command, headers, bot_name):
     else:
         communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter,url_filter,help=True)      
 
-def test_process_bot_input_command(room_id,command, headers, bot_name):
+def process_bot_input_command(room_id,command, headers, bot_name):
     """ 
         Provides a few different command options based in different lists. (commands should be lower case)
         Combines all lists together and checks if any keyword commands are detected...basically a manually created case/switch statement
@@ -231,16 +285,16 @@ def test_process_bot_input_command(room_id,command, headers, bot_name):
             url_filter = True
         if "test" in result:
             print(f"made it to test:  {result['test']}")           
-            test_create_card(ss_client,room_id,TEST_HEADERS)
+            create_card(ss_client,room_id,headers)
             return
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
-        test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=False)
+        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=False)
     else:
-        test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=True)    
-        #test_create_card(room_id,headers)  
+        communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=True)    
+        #create_card(room_id,headers)  
         return
 
-def test_process_card_inputs(room_id,result,card_id,headers,bot_name ):
+def process_card_inputs(room_id,result,card_id,headers,bot_name ):
     msg_ids_list = []
     msg_ids_list.append(card_id)
 
@@ -253,7 +307,7 @@ def test_process_card_inputs(room_id,result,card_id,headers,bot_name ):
     remove_old_msgs(room_id,msg_ids_list,headers)
     ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     if "create" in result["button_choice"]:
-        test_create_card(ss_client,room_id,headers)
+        create_card(ss_client,room_id,headers)
     else:
         string = result['state_code']
         #use sanitize string function for this
@@ -269,8 +323,8 @@ def test_process_card_inputs(room_id,result,card_id,headers,bot_name ):
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
         #print(data)
         msg_ids_list = []
-        msg_ids_list = test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=False)
-        test_create_rerun_card(room_id,result,headers,msg_ids_list)
+        msg_ids_list = communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=False)
+        create_rerun_card(room_id,result,headers,msg_ids_list)
 
 def remove_old_msgs(room_id,msg_ids_list,headers):
     payload = ""
@@ -279,7 +333,7 @@ def remove_old_msgs(room_id,msg_ids_list,headers):
         response = requests.request("DELETE", url, data=payload, headers=headers)
         print(response.text)
 
-def test_create_rerun_card(room_id,result,headers,msg_ids_list=[]):
+def create_rerun_card(room_id,result,headers,msg_ids_list=[]):
     markdown = "Resubmit search button"
     version = "1.0"
     state_code = result["state_code"]
@@ -297,7 +351,7 @@ def test_create_rerun_card(room_id,result,headers,msg_ids_list=[]):
         #mobile support for cards on Roadmap
     )
 
-    test_card_payload = (
+    card_payload = (
         f'{{'
         f'"roomId": "{room_id}",'
         f'"markdown": "{markdown}",'
@@ -357,8 +411,8 @@ def test_create_rerun_card(room_id,result,headers,msg_ids_list=[]):
          
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
-    print(test_card_payload)
-    response = requests.request("POST", URL, data=test_card_payload, headers=headers)
+    print(card_payload)
+    response = requests.request("POST", URL, data=card_payload, headers=headers)
     responseJson = json.loads(response.text)
     print(str(responseJson))
 
@@ -371,8 +425,8 @@ def get_msg_sent_to_bot(msg_id, headers):
     #print ("Message to bot : {}".format(response["text"]))
     return response["text"]
 
-def test_get_person_from_id(person_id, headers):
-    urltext = TEST_PERSON_URL + "/" + person_id
+def get_person_from_id(person_id, headers):
+    urltext = PERSON_URL + "/" + person_id
     payload = ""
 
     response = requests.request("GET", urltext, data=payload, headers=headers)
@@ -381,8 +435,8 @@ def test_get_person_from_id(person_id, headers):
     return response["emails"][0]
 
 
-def test_get_card_msg(data_id, headers):
-    urltext = TEST_CARD_MSG_URL + "/" + data_id
+def get_card_msg(data_id, headers):
+    urltext = CARD_MSG_URL + "/" + data_id
     payload = ""
 
     response = requests.request("GET", urltext, data=payload, headers=headers)
@@ -390,114 +444,13 @@ def test_get_card_msg(data_id, headers):
     print ("Message to bot : {}".format(response))
     return response["inputs"]
 
-def test_create_card(ss_client,room_id,headers):
-    card_payload = """{ "roomId": "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj",           
-        
-        "markdown": "[Tell us about yourself](https://www.example.com/form/book-vacation). We just need a few more details to get you booked for the trip of a lifetime!",
-        "attachments": [
-            {
-            "contentType": "application/vnd.microsoft.card.adaptive",
-                        "content": {
-                        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                        "type": "AdaptiveCard",
-                        "version": "1.0",
-                        "body": [
-                            {
-                                "type": "ColumnSet",
-                                "columns": [
-                                    {
-                                        "type": "Column",
-                                        "width": 3,
-                                        "items": [
-                                {
-                                    "type": "TextBlock",
-                                    "text": "Events-tbd Bot",
-                                    "weight": "Bolder",
-                                    "size": "Medium"
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    "text": "Enter a State Code from the list below:",
-                                    "isSubtle": true,
-                                    "wrap": true
-                                },
-                                {
-                                    "type": "FactSet",
-                                    "facts": [
-                                        {
-                                            "title": "South",
-                                            "value": "TX FL CA"
-                                        },
-                                        {
-                                            "title": "East",
-                                            "value": "NC NY MA"
-                                        }
-                                    ],
-                                    "id": "state_list"
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    "text": "State Code",
-                                    "wrap": true
-                                },
-                                {
-                                    "type": "Input.Text",
-                                    "placeholder": "TX",
-                                    "id": "stace_code"
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    "text": "Filter",
-                                    "wrap": true
-                                },
-                                {
-                                    "type": "FactSet",
-                                    "facts": [
-                                        {
-                                            "title": "Collaboration",
-                                            "value": "collab"
-                                        },
-                                        {
-                                            "title": "Data Center",
-                                            "value": "dc"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "type": "Input.Text",
-                                    "id": "filter_flag",
-                                    "placeholder": "collab",
-                                    "value": ""
-                                },
-                                {
-                                    "type": "Input.Toggle",
-                                    "title": "Mobile?",
-                                    "value": "false",
-                                    "wrap": false,
-                                    "id" : "mobile_flag"
-                                }
-
-                                        ]
-                                    }
-                                ]
-                            }
-                        ],
-                        "actions": [
-                            {
-                                "type": "Action.Submit",
-                                "title": "Submit"
-                            }
-                        ]
-                    }
-            }
-        ]
-        }
-    """                
+def create_card(ss_client,room_id,headers):
+              
     
     #ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     #area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
     area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)    
-    msg = format_help_msg(area_dict, 'hugtest',test_flag=True)
+    msg = format_help_msg(area_dict, 'hugtest',card_flag=True)
     #print(msg)
     #room_id = "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj"
     markdown = msg
@@ -547,7 +500,7 @@ def test_create_card(ss_client,room_id,headers):
         f']}}]}}'
         #mobile support for cards on Roadmap
     )
-    test_card_payload = (
+    card_payload = (
         f'{{'
         f'"roomId": "{room_id}",'
         f'"markdown": "{markdown}",'
@@ -561,9 +514,9 @@ def test_create_card(ss_client,room_id,headers):
     )     
     #payload = {"roomId": room_id,"markdown": message}
     #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
-    print(test_card_payload)
-    response = requests.request("POST", URL, data=test_card_payload, headers=headers)
-    #response = requests.post(URL, data=test_card_payload, headers=headers)
+    print(card_payload)
+    response = requests.request("POST", URL, data=card_payload, headers=headers)
+    #response = requests.post(URL, data=card_payload, headers=headers)
     
     #response = requests.request("POST", URL, data=json.dumps(card_payload), headers=headers)
     responseJson = json.loads(response.text)
@@ -615,7 +568,7 @@ def error_handling(response,err_code,user_input,room_id,headers):
     bot_post_to_room(room_id,message,headers)
 
 
-def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter=False,url_filter=False,help=False):
+def old_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter=False,url_filter=False,help=False):
     if not help:
         if url_filter:
             #do something
@@ -660,61 +613,8 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arc
         bot_post_to_room(room_id, msg, headers)          
 
 
-def test_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,arch_filter,mobile_filter=False,url_filter=False,help=False):
-    msg_ids_list = []
-    if not help:
-        if url_filter:
-            #do something
-            for i in data:
-                if i["url"]:
-                    print(f"{i['Event Name']}   {i['url']} ")
-        if not mobile_filter:
-            state_list_joined = " ".join(state_filter)
 
-            #MULTI-PRINT
-            #n = # of events per message. 50 seems to be the limit so setting it to 40 just for some room
-            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="start")
-            response = bot_post_to_room(room_id, msg, headers)
-            msg_ids_list.append(response["id"])
-            n = 40 #how large the data chunk to print
-            for i in range(0, len(data), n):
-                data_chunk = data[i:i + n]
-                msg = format_code_print_for_bot(data_chunk,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="data")
-                response = bot_post_to_room(room_id, msg, headers)   
-                msg_ids_list.append(response["id"])
-            msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="end")
-            response = bot_post_to_room(room_id, msg, headers)  
-            msg_ids_list.append(response["id"])                       
-
-            msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
-            email_filename = generate_email(msg)
-            response = bot_send_email(room_id,email_filename)  
-        else:
-            state_list_joined = " ".join(state_filter)
-
-            msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE, msg_flag="start")
-            response = bot_post_to_room(room_id, msg, headers)
-            msg_ids_list.append(response["id"])
-
-            n = 40 #how large the data chunk to print
-            for i in range(0, len(data), n):
-                data_chunk = data[i:i + n]
-                msg = format_code_print_for_bot_mobile(data_chunk,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="data")
-                response = bot_post_to_room(room_id, msg, headers)  
-                msg_ids_list.append(response["id"]) 
-            msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="end")
-            response = bot_post_to_room(room_id, msg, headers) 
-            msg_ids_list.append(response["id"])                  
-
-    else:
-        #area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
-        #msg = format_help_msg(area_dict, bot_name)
-        #bot_post_to_room(room_id, msg, headers)    
-        response = test_create_card(ss_client,room_id,headers)    
-        msg_ids_list.append(response["id"])
-    return msg_ids_list  
-
-def test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=False):
+def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=False):
     msg_ids_list = []
     if not help:
 
@@ -731,9 +631,9 @@ def test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filt
             msg = format_code_print_for_bot_mobile(data_chunk,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="data")
             response = bot_post_to_room(room_id, msg, headers)  
             msg_ids_list.append(response["id"]) 
-        msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="end")
-        response = bot_post_to_room(room_id, msg, headers) 
-        msg_ids_list.append(response["id"])                  
+        #msg = format_code_print_for_bot_mobile(data,state_list_joined,CODE_PRINT_COLUMNS_MOBILE,msg_flag="end")
+        #response = bot_post_to_room(room_id, msg, headers) 
+        #msg_ids_list.append(response["id"])                  
 
 
         ###Code print#####
@@ -750,9 +650,9 @@ def test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filt
             msg = format_code_print_for_bot(data_chunk,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="data")
             response = bot_post_to_room(room_id, msg, headers)   
             msg_ids_list.append(response["id"])
-        msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="end")
-        response = bot_post_to_room(room_id, msg, headers)  
-        msg_ids_list.append(response["id"])                       
+        #msg = format_code_print_for_bot(data,state_list_joined,CODE_PRINT_COLUMNS,msg_flag="end")
+        #response = bot_post_to_room(room_id, msg, headers)  
+        #msg_ids_list.append(response["id"])                       
 
         #msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
         #email_filename = generate_email(msg)
@@ -763,7 +663,7 @@ def test2_communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filt
         #area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)
         #msg = format_help_msg(area_dict, bot_name)
         #bot_post_to_room(room_id, msg, headers)    
-        response = test_create_card(ss_client,room_id,headers)    
+        response = create_card(ss_client,room_id,headers)    
         msg_ids_list.append(response["id"])
     return msg_ids_list  
 
