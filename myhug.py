@@ -289,6 +289,7 @@ def process_bot_input_command(room_id,command, headers, bot_name):
             return
         data = get_all_data_and_filter(ss_client,EVENT_SMARTSHEET_ID, state_filter,arch_filter,url_filter,NO_COLUMN_FILTER)
         communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=False)
+        bot_post_to_room(room_id, f"If on Desktop: Try the new Events Form.  \nType '@{bot_name} help' to get started", headers)
     else:
         communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,help=True)    
         #create_card(room_id,headers)  
