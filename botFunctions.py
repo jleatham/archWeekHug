@@ -403,7 +403,7 @@ def get_logs_from_ss(ss_client):
                 row_dict[column_title] = str(cell.value)
             else:
                 row_dict[column_title] = ''
-            all_data_list.append(row_dict)
+        all_data_list.append(row_dict)
 
     print(all_data_list)
     email_list = []
