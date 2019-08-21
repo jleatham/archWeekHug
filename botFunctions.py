@@ -388,6 +388,52 @@ def send_log_to_ss(bot_name,timestamp,identity,command,room_id):
     responseJson = json.loads(response.text)
     #print(str(responseJson))
 
+def get_logs_from_ss(ss_client):
+
+    #grab all smartsheet data and iterate through it
+    sheet = ss_client.Sheets.get_sheet(sheet_id, os.environ['SS_LOG_ID'])
+    all_data_list = []
+    for row in sheet.rows:
+        row_dict = {}      
+        for cell in row.cells:
+            #map the column id to the column name
+            #map the cell data to the column or '' if null
+            column_title = map_cell_data_to_columnId(sheet.columns, cell)
+            if cell.value:
+                row_dict[column_title] = str(cell.value)
+            else:
+                row_dict[column_title] = ''
+            all_data_list.append(row_dict)
+        '''
+        try:
+            if (row_dict['State'] in state or row_dict['Event Type'] == 'Virtual') and (row_dict['Event Status'] == 'Confirmed' and datetime.strptime(row_dict['Event Date'], '%Y-%m-%d') > datetime.now() ):
+                if row_dict['Event Type'] == 'Virtual':
+                    row_dict['City'] = 'Virtual'
+                all_data_list.append(row_dict)
+        except Exception as e:
+            print(f"Error in event row:  {e}")
+        '''
+    print(all_data_list)
+    email_list = []
+    usage_map = []
+    for i in all_data_list:
+        email_list.append(i["User"])
+    email_list = list(set(email_list))
+    for user in email_list:
+
+        count = 0
+        for i in all_data_list:
+            if i["User"] == user:
+                count += 1
+        usage_map.append({"User": user, "count":count})
+
+    sorted_data = sorted(usage_map, key=itemgetter('count'))
+    print(sorted_data)
+
+
+
+
+
 
 def command_parse(command_list,command):
     #potential problem: city name has event / events or mobile or phone in it.  Could search for space or beginning of string to filter that out.

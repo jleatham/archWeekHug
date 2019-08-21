@@ -260,12 +260,14 @@ def process_bot_input_command(room_id,command, headers, bot_name):
     url_filter = False
     data = []
     
+    #create a function to display who uses the bot the most (grab logs, count usage and return)
     command_list = [
         ("events",['event','events','-e']),
         ("mobile",['mobile','phone','-m']),
         ("filter",['filter','-f']),
         ("url_test",['url','-u']),
-        ("test",['test','-t'])
+        ("test",['test','-t']),
+        ("stats",['stats','-s'])
         #("command alias",["list of possible command entries"])
     ]
     result = command_parse(command_list,command)
@@ -283,6 +285,10 @@ def process_bot_input_command(room_id,command, headers, bot_name):
         if "url_test" in result:
             print(f"made it to url_test:  {result['url_test']}") 
             url_filter = True
+        if "stats" in result:
+            print(f"made it to stats:  {result['stats']}") 
+            get_logs_from_ss(ss_client)
+            return         
         if "test" in result:
             print(f"made it to test:  {result['test']}")           
             create_card(ss_client,room_id,headers)
@@ -658,6 +664,10 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,hel
         #msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
         #email_filename = generate_email(msg)
         #response = bot_send_email(room_id,email_filename)  
+        
+        response = bot_post_to_room(room_id, f"Have an event to add?  Please email the event **[HERE](mailto:{os.environ['EMAIL_ADD_EVENT']})**", headers)
+        msg_ids_list.append(response["id"])        
+        #
 
 
     else:
