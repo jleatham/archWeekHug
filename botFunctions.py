@@ -412,20 +412,24 @@ def get_logs_from_ss(ss_client):
         email_list.append(i["User"])
     email_list = list(set(email_list))
     for user in email_list:
-
+        days = []
         count = 0
         for i in all_data_list:
             if i["User"] == user:
                 count += 1
-        usage_map.append({"User": user, "count":count})
+                if i["Date"][:10] not in days:
+                    days.append(i["Date"][:10])
+        usage_map.append({"User": user, "count":count, "days": len(days)})
 
     sorted_data = sorted(usage_map, key=itemgetter('count'))
     print(sorted_data)
     msg_list = []
-    msg_list.append(f"### Top usage for Bot: \n")
+    msg_list.append(f"### Top usage for Bot: \n\n ```\n")
+    msg_list.append(f"{'User':<20}: {'Count':<3}: {'Days Used':<3}   \n")
     for i in sorted_data:
-        msg_list.append(f"{i['User']:<20}: {i['count']:<5}  \n")
+        msg_list.append(f"{i['User']:<20}: {i['count']:<3}: {i['days']:<3}  \n")
     msg = ''.join(msg_list)
+    msg_list.append(f"\n ```\n")
     return msg
 
 
