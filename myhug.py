@@ -11,7 +11,7 @@ from botFunctions import CODE_PRINT_COLUMNS, EMAIL_COLUMNS,CODE_PRINT_COLUMNS_MO
 from botFunctions import ss_get_client, get_all_areas_and_associated_states
 from botFunctions import format_help_msg,get_all_data_and_filter, format_code_print_for_bot, format_code_print_for_bot_mobile
 from botFunctions import generate_html_table_for_bot, map_cell_data_to_columnId
-from botFunctions import generate_email, bot_send_email, send_log_to_ss
+from botFunctions import generate_email, bot_send_email, send_log_to_ss, get_logs_from_ss
 from botFunctions import command_parse, sanitize_commands, process_state_codes, process_arch_filter, filter_data_by_architecture
 
 
