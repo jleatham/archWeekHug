@@ -404,15 +404,7 @@ def get_logs_from_ss(ss_client):
             else:
                 row_dict[column_title] = ''
             all_data_list.append(row_dict)
-        '''
-        try:
-            if (row_dict['State'] in state or row_dict['Event Type'] == 'Virtual') and (row_dict['Event Status'] == 'Confirmed' and datetime.strptime(row_dict['Event Date'], '%Y-%m-%d') > datetime.now() ):
-                if row_dict['Event Type'] == 'Virtual':
-                    row_dict['City'] = 'Virtual'
-                all_data_list.append(row_dict)
-        except Exception as e:
-            print(f"Error in event row:  {e}")
-        '''
+
     print(all_data_list)
     email_list = []
     usage_map = []
@@ -432,7 +424,9 @@ def get_logs_from_ss(ss_client):
     msg_list = []
     msg_list.append(f"### Top usage for Bot: \n")
     for i in sorted_data:
-        msg_list.append(f"")
+        msg_list.append(f"{i['User']:<20}: {i['count']:<5}  \n")
+    msg = ''.join(msg_list)
+    return msg
 
 
 

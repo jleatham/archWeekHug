@@ -287,7 +287,8 @@ def process_bot_input_command(room_id,command, headers, bot_name):
             url_filter = True
         if "stats" in result:
             print(f"made it to stats:  {result['stats']}") 
-            get_logs_from_ss(ss_client)
+            msg = get_logs_from_ss(ss_client)
+            bot_post_to_room(room_id,msg,headers)
             return         
         if "test" in result:
             print(f"made it to test:  {result['test']}")           
