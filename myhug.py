@@ -139,7 +139,7 @@ def events(body):
     email = EVENTS_EMAIL
     headers = EVENTS_HEADERS
     name = EVENTS_NAME    
-    #print(f"GOT {type(body)}: {repr(body)}")
+    print(f"GOT {type(body)}: {repr(body)}")
     resource = body["resource"]
     bot_event = body["event"]
     print(f'Resource = {resource}    Event = {bot_event}')
@@ -161,7 +161,7 @@ def events(body):
         room_id = body["data"]["roomId"]
         identity = body["data"]["personEmail"]
         text = body["data"]["id"]
-        print("hugtest sees POST from {}".format(identity))
+        print("Events-tbd sees POST from {}".format(identity))
         if identity != email:
             print("{}-----{}".format(identity,email))
             #command = get_msg_sent_to_bot(text).lower()
@@ -458,7 +458,7 @@ def create_card(ss_client,room_id,headers):
     #ss_client = ss_get_client(os.environ['SMARTSHEET_TOKEN'])
     #area_dict = {"south":["TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC","TX","AR","NC"],"west":["CA","OR"]}
     area_dict = get_all_areas_and_associated_states(ss_client,EVENT_SMARTSHEET_ID,AREA_COLUMN_FILTER)    
-    msg = format_help_msg(area_dict, 'hugtest',card_flag=True)
+    msg = format_help_msg(area_dict, 'Events-tbd',card_flag=True)
     #print(msg)
     #room_id = "Y2lzY29zcGFyazovL3VzL1JPT00vYTNjMjZkODAtMzZjYi0xMWU5LTk5NWItYjc2YjYzMTg0MjRj"
     markdown = msg
