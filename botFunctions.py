@@ -391,7 +391,7 @@ def send_log_to_ss(bot_name,timestamp,identity,command,room_id):
 def get_logs_from_ss(ss_client):
 
     #grab all smartsheet data and iterate through it
-    sheet = ss_client.Sheets.get_sheet(sheet_id, os.environ['SS_LOG_ID'])
+    sheet = ss_client.Sheets.get_sheet(os.environ['SS_LOG_ID'])
     all_data_list = []
     for row in sheet.rows:
         row_dict = {}      
@@ -429,6 +429,10 @@ def get_logs_from_ss(ss_client):
 
     sorted_data = sorted(usage_map, key=itemgetter('count'))
     print(sorted_data)
+    msg_list = []
+    msg_list.append(f"### Top usage for Bot: \n")
+    for i in sorted_data:
+        msg_list.append(f"")
 
 
 
