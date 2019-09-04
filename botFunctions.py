@@ -88,6 +88,7 @@ def format_help_msg(area_dict, bot_name, card_flag=False):
     """
     ### cards API send markdown as part of JSON, needs to be formatted slightly different
     if card_flag == True:
+        '''
         msg_list = []
         
         msg_list.append("``` \\n\\n")
@@ -127,6 +128,9 @@ def format_help_msg(area_dict, bot_name, card_flag=False):
         
         msg = ''.join(msg_list)
         return msg
+        '''
+        #temp testing because cards not working
+        return "Card help message currently disabled"
     else:
         msg_list = []     
         msg_list.append("``` \n\n")
