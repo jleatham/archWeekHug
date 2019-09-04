@@ -497,7 +497,7 @@ def create_card(ss_client,room_id,headers):
         f'{{"type": "ColumnSet","columns": [{{"type": "Column","width": 2,"items": ['
         f'{{"type": "TextBlock","text": "Events-tbd Bot","weight": "Bolder","size": "Medium"}},'
         f'{{"type": "TextBlock","text": "Enter a State Code from the list below:","isSubtle": true,"wrap": true}},'
-        f'{{"type": "FactSet","facts": [{area_state_codes}],"id": "state_list"}},'
+        #f'{{"type": "FactSet","facts": [{area_state_codes}],"id": "state_list"}},'
         f'{{"type": "TextBlock","text": "Enter State Code(s):","wrap": true}},'
         f'{{"type": "Input.Text","placeholder": "TX, FL, CA","id": "state_code"}},'
         f'{{"type": "TextBlock","text": "Filter Events by Architecture:","wrap": true}},'        

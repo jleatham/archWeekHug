@@ -129,8 +129,8 @@ def format_help_msg(area_dict, bot_name, card_flag=False):
         msg = ''.join(msg_list)
         return msg
         '''
-        #temp testing because cards not working
-        return "Card help message currently disabled"
+        #temp for testing
+        return "Test"
     else:
         msg_list = []     
         msg_list.append("``` \n\n")
