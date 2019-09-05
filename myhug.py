@@ -499,7 +499,7 @@ def create_card(ss_client,room_id,headers):
         f'{{"type": "TextBlock","text": "Enter a State Code from the list below:","isSubtle": true,"wrap": true}},'
         f'{{"type": "FactSet","facts": [{area_state_codes}],"id": "state_list"}},'
         f'{{"type": "TextBlock","text": "Enter State Code(s):","wrap": true}},'
-        f'{{"type": "Input.Text","placeholder": "TX, FL, CA","id": "state_code"}},'
+        f'{{"type": "Input.Text","placeholder": "TX, FL, CA","id": "state_code","value": "TX, FL, CA"}},'
         f'{{"type": "TextBlock","text": "Filter Events by Architecture:","wrap": true}},'        
         f'{{"type": "Input.ChoiceSet","choices": [{filter_options}],"id":"filter_flag","title": "Chose tech filter","isMultiSelect": false,"value": ""}},'
         f'{{"type": "Input.Text","id": "old_msg_ids","isVisible": false,"value": ""}},'
