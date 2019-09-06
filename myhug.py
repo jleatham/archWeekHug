@@ -665,9 +665,10 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,hel
         msg = generate_html_table_for_bot(data,state_list_joined,EMAIL_COLUMNS)
         email_filename = generate_email(msg)
         response = bot_send_email(room_id,email_filename)  
-        
+        msg_ids_list.append(response["id"])
+
         print ("\n\n********************")
-        print (response)
+        print ("Email response: {}".format(response))
 
         response = bot_post_to_room(room_id, f"Have an event to add?  Please email the event **[HERE](mailto:{os.environ['EMAIL_ADD_EVENT']})**", headers)
         msg_ids_list.append(response["id"])        
