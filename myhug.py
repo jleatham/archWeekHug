@@ -669,6 +669,8 @@ def communicate_to_user(ss_client,room_id,headers,bot_name,data,state_filter,hel
 
         print ("\n\n********************")
         print ("Email response: {}".format(response))
+        print ("\n\n********************")
+        print (type(response))
 
         response = bot_post_to_room(room_id, f"Have an event to add?  Please email the event **[HERE](mailto:{os.environ['EMAIL_ADD_EVENT']})**", headers)
         msg_ids_list.append(response["id"])        
