@@ -536,10 +536,10 @@ def create_card(ss_client,room_id,headers):
 def bot_post_to_room(room_id, message, headers):
     print(f"msg byte size(UTF-8): {len(message.encode('utf-8'))} bytes")
     #try to post
-    print ("\n\n")
+    print ("\n \n")
     print ("lenght of message: {}".format(message))
     print ("\n type: {} ".format(type(message)))
-    print ("\n\n")
+    print ("\n \n")
 
     payload = {"roomId": room_id,"markdown": message}
     response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
