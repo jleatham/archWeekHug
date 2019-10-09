@@ -288,11 +288,10 @@ def process_bot_input_command(room_id,command, headers, bot_name):
         if "stats" in result:
             print(f"made it to stats:  {result['stats']}") 
             msg = get_logs_from_ss(ss_client)
-            print ("*********************")
-            print (type(msg))
-            print ("\n")
-            print (len(msg))
-            print ("*********************")
+            i = 6000
+            while len(msg) > i:
+                bot_post_to_room(room_id,msg[:i],headers)
+                msg = msg[i:]
             bot_post_to_room(room_id,msg,headers)
             return         
         if "test" in result:

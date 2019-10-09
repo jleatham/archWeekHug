@@ -426,12 +426,13 @@ def get_logs_from_ss(ss_client):
     sorted_data = sorted(usage_map, key=itemgetter('count'))
     print(sorted_data)
     msg_list = []
-    msg_list.append(f"### Top usage for Bot: \n\n ```\n")
+    #msg_list.append(f"### Top usage for Bot: \n\n ```\n")
+    msg_list.append(f"### Top usage for Bot: \n\n")
     msg_list.append(f"{'User':<20}: {'Count':<8}: {'Days Used':<3}   \n")
     for i in sorted_data:
         msg_list.append(f"{i['User']:<20}: {i['count']:<8}: {i['days']:<3}  \n")
     msg = ''.join(msg_list)
-    msg_list.append(f"\n ```\n")
+    #msg_list.append(f"\n ```\n")
     
     return msg
 
