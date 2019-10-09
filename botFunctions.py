@@ -432,7 +432,7 @@ def get_logs_from_ss(ss_client):
         msg_list.append(f"{i['User']:<20}: {i['count']:<8}: {i['days']:<3}  \n")
     msg = ''.join(msg_list)
     msg_list.append(f"\n ```\n")
-    msg = json.loads(msg)
+    
     return msg
 
 
