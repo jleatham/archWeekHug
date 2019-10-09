@@ -542,10 +542,6 @@ def bot_post_to_room(room_id, message, headers):
     print(f"msg byte size(UTF-8): {len(message.encode('utf-8'))} bytes")
     #try to post
 
-    print ("\n \n")
-    print ("lenght of message: {}".format(test_msg))
-    print ("\n type: {} ".format(type(test_msg)))
-    print ("\n \n")
 
     payload = {"roomId": room_id,"markdown": message}
     response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
