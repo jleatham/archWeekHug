@@ -541,7 +541,7 @@ def create_card(ss_client,room_id,headers):
 def bot_post_to_room(room_id, message, headers):
     print(f"msg byte size(UTF-8): {len(message.encode('utf-8'))} bytes")
     #try to post
-    test_msg = json.loads(message)
+
     print ("\n \n")
     print ("lenght of message: {}".format(test_msg))
     print ("\n type: {} ".format(type(test_msg)))
