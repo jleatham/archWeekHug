@@ -288,7 +288,6 @@ def process_bot_input_command(room_id,command, headers, bot_name):
         if "stats" in result:
             print(f"made it to stats:  {result['stats']}") 
             msg = get_logs_from_ss(ss_client)
-            print (len(msg))
             bot_post_to_room(room_id,msg,headers)
             return         
         if "test" in result:
@@ -537,6 +536,11 @@ def create_card(ss_client,room_id,headers):
 def bot_post_to_room(room_id, message, headers):
     print(f"msg byte size(UTF-8): {len(message.encode('utf-8'))} bytes")
     #try to post
+    print ("\n\n")
+    print ("lenght of message: {}".format(message))
+    print ("\n type: {} ".format(type(message))
+    print ("\n\n")
+
     payload = {"roomId": room_id,"markdown": message}
     response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
     #error handling
