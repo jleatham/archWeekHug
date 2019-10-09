@@ -536,8 +536,17 @@ def create_card(ss_client,room_id,headers):
 def bot_post_to_room(room_id, message, headers):
     print(f"msg byte size(UTF-8): {len(message.encode('utf-8'))} bytes")
     #try to post
-    payload = {"roomId": room_id,"markdown": message}
-    response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
+    #payload = {"roomId": room_id,"markdown": message}
+
+    n = 30 #how large the data chunk to print
+    for i in range(0, len(message), n):
+        data_chunk = data[i:i + n]
+        payload = {"roomId": room_id,"markdown": data_chunk}
+        response = requests.request("POST", URL, data=json.dumps(payload), headers=headers) 
+        
+
+
+    #response = requests.request("POST", URL, data=json.dumps(payload), headers=headers)
     #error handling
     if response.status_code != 200:
         #modify function to receive user_input as well so we can pass through
