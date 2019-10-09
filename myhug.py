@@ -540,7 +540,7 @@ def bot_post_to_room(room_id, message, headers):
 
     n = 30 #how large the data chunk to print
     for i in range(0, len(message), n):
-        data_chunk = data[i:i + n]
+        data_chunk = message[i:i + n]
         payload = {"roomId": room_id,"markdown": data_chunk}
         response = requests.request("POST", URL, data=json.dumps(payload), headers=headers) 
         
