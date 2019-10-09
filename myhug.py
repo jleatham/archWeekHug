@@ -538,7 +538,7 @@ def bot_post_to_room(room_id, message, headers):
     #try to post
     print ("\n\n")
     print ("lenght of message: {}".format(message))
-    print ("\n type: {} ".format(type(message))
+    print ("\n type: {} ".format(type(message)))
     print ("\n\n")
 
     payload = {"roomId": room_id,"markdown": message}
