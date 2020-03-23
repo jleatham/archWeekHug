@@ -274,8 +274,7 @@ def process_bot_input_command(room_id,command, headers, bot_name):
     ##looks like: {"event":"TX FL AL","filter":"sec dc","mobile":""}
     if result:
         if "events" in result:
-            print(f"made it to events:  {result['events']}")
-            print ("\nMINH") 
+            print(f"made it to events:  {result['events']}") 
             state_filter = process_state_codes(result['events'].upper().split(" "),reverse=False)
         if "filter" in result:
             print(f"made it to filter:  {result['filter']}") 
