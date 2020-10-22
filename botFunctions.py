@@ -608,7 +608,7 @@ def row_format_for_code_print_mobile(columns,header=False,row_dict={}):
                 str_list.append("  •  **City:** {}  \n".format(row_dict[column]))
             elif column == "Event Date":
                 str_list.append("  •  **Date:** {}  \n".format(row_dict[column]))
-            elif column == "Architecture":
+            elif column == "Business Entity":
                 str_list.append("  •  **Arch:** {}  \n".format(row_dict[column]))
             elif column == "Informational Link":
                 if row_dict[column] == "":
